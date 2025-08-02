@@ -7,8 +7,8 @@ import { cn } from "@/lib/utils"
 import { useSidebar } from "@/components/ui/sidebar"
 
 interface SidebarProps {
-  activeView: "dashboard" | "admin"
-  setActiveView: (view: "dashboard" | "admin") => void
+  activeView: "dashboard" | "admin" | "analytics"
+  setActiveView: (view: "dashboard" | "admin" | "analytics") => void
 }
 
 export function Sidebar({ activeView, setActiveView }: SidebarProps) {
@@ -32,7 +32,8 @@ export function Sidebar({ activeView, setActiveView }: SidebarProps) {
       id: "analytics",
       label: "Analytics",
       icon: BarChart3,
-      disabled: true,
+      view: "analytics" as const, // Enabled and assigned a view
+      // disabled: true, // Removed disabled property
     },
     {
       id: "users",

@@ -265,13 +265,13 @@ export function ModernCharts() {
         {/* Enhanced Category Distribution */}
         <div
           ref={pieChartRef}
-          className="bg-white/80 backdrop-blur-sm rounded-2xl border border-gray-200/50 p-6 shadow-xl hover:shadow-2xl transition-all duration-300"
+          className="bg-white/80 backdrop-blur-sm rounded-2xl border border-gray-200/50 p-6 shadow-xl hover:shadow-2xl transition-all duration-300 flex flex-col"
         >
           <div className="flex items-center justify-between mb-6">
             <h4 className="text-lg font-semibold text-gray-900">Asset Distribution</h4>
             <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse"></div>
           </div>
-          <div className="h-64">
+          <div className="flex-1 min-h-[16rem]"> {/* Removed h-64, added flex-1 and a min-height for mobile consistency */}
             {pieChartInView && (
               <ResponsiveContainer width="100%" height="100%" key={pieChartKey}>
                 <PieChart>
@@ -310,16 +310,16 @@ export function ModernCharts() {
         {/* Enhanced Status Overview */}
         <div
           ref={barChartRef}
-          className="bg-white/80 backdrop-blur-sm rounded-2xl border border-gray-200/50 p-6 shadow-xl hover:shadow-2xl transition-all duration-300"
-        >
+          className="bg-white/80 backdrop-blur-sm rounded-2xl border border-gray-200/50 p-6 shadow-xl hover:shadow-2xl transition-all duration-300 flex flex-col"
+>
           <div className="flex items-center justify-between mb-6">
             <h4 className="text-lg font-semibold text-gray-900">Asset Status</h4>
             <div className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></div>
           </div>
-          <div className="h-64">
+          <div className=\"min-h-[16rem] lg:h-96 lg:flex-initial lg:px-0\"> {/* Removed h-64, added flex-1 and a min-height for mobile consistency */}
             {barChartInView && (
               <ResponsiveContainer width="100%" height="100%" key={barChartKey}>
-                <BarChart data={statusData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
+                <BarChart data={statusData} margin={{ top: 20, right: 30, left: 0, bottom: 5 }}>
                   <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
                   <XAxis dataKey="name" tick={{ fontSize: 12, fill: "#64748b" }} axisLine={{ stroke: "#e2e8f0" }} />
                   <YAxis tick={{ fontSize: 12, fill: "#64748b" }} axisLine={{ stroke: "#e2e8f0" }} />
@@ -339,16 +339,16 @@ export function ModernCharts() {
         {/* Enhanced Growth Trend */}
         <div
           ref={areaChartRef}
-          className="bg-white/80 backdrop-blur-sm rounded-2xl border border-gray-200/50 p-6 shadow-xl hover:shadow-2xl transition-all duration-300 lg:col-span-2 xl:col-span-1"
-        >
+          className="bg-white/80 backdrop-blur-sm rounded-2xl border border-gray-200/50 p-6 shadow-xl hover:shadow-2xl transition-all duration-300 lg:col-span-2 xl:col-span-1 flex flex-col"
+>
           <div className="flex items-center justify-between mb-6">
             <h4 className="text-lg font-semibold text-gray-900">Growth Trends</h4>
             <div className="w-2 h-2 bg-purple-500 rounded-full animate-pulse"></div>
           </div>
-          <div className="h-64">
+          <div className=\"min-h-[16rem] lg:h-96 lg:flex-initial lg:px-0\"> {/* Removed h-64, added flex-1 and a min-height for mobile consistency */}
             {areaChartInView && (
               <ResponsiveContainer width="100%" height="100%" key={areaChartKey}>
-                <AreaChart data={trendData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
+                <AreaChart data={trendData} margin={{ top: 20, right: 30, left: 0, bottom: 5 }}>
                   <defs>
                     <linearGradient id="assetGradient" x1="0" y1="0" x2="0" y2="1">
                       <stop offset="5%" stopColor="#3B82F6" stopOpacity={0.3} />
