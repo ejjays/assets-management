@@ -16,9 +16,31 @@ import {
   AreaChart,
 } from "recharts"
 import { useAssetStore } from "@/lib/asset-store"
+import { useInView } from "react-intersection-observer"
+import { useState, useEffect, useMemo } from "react"
+
+const useAnimateOnInView = () => {
+  const { ref, inView } = useInView({
+    triggerOnce: false,
+    threshold: 0.1,
+    rootMargin: "200px 0px",
+  })
+  const [key, setKey] = useState(0)
+
+  useEffect(() => {
+    if (inView) {
+      setKey((prevKey) => prevKey + 1)
+    }
+  }, [inView])
+
+  return { ref, key, inView }
+}
 
 export function ModernCharts() {
   const { assets } = useAssetStore()
+  const { ref: pieChartRef, key: pieChartKey, inView: pieChartInView } = useAnimateOnInView()
+  const { ref: barChartRef, key: barChartKey, inView: barChartInView } = useAnimateOnInView()
+  const { ref: areaChartRef, key: areaChartKey, inView: areaChartInView } = useAnimateOnInView()
 
   // Modern color palette
   const modernColors = {
@@ -49,106 +71,118 @@ export function ModernCharts() {
   ]
 
   // Category distribution data with modern colors
-  const categoryData = [
-    {
-      name: "Electronics",
-      value: assets.filter((a) => a.category === "Electronics").length,
-      color: "#3B82F6",
-      gradient: "url(#blueGradient)",
-    },
-    {
-      name: "Vehicles",
-      value: assets.filter((a) => a.category === "Vehicles").length,
-      color: "#10B981",
-      gradient: "url(#emeraldGradient)",
-    },
-    {
-      name: "Equipment",
-      value: assets.filter((a) => a.category === "Equipment").length,
-      color: "#8B5CF6",
-      gradient: "url(#purpleGradient)",
-    },
-    {
-      name: "Furniture",
-      value: assets.filter((a) => a.category === "Furniture").length,
-      color: "#F59E0B",
-      gradient: "url(#amberGradient)",
-    },
-    {
-      name: "Mobile",
-      value: assets.filter((a) => a.category === "Mobile Devices").length,
-      color: "#EC4899",
-      gradient: "url(#pinkGradient)",
-    },
-    {
-      name: "IT Hardware",
-      value: assets.filter((a) => a.category === "IT Hardware").length,
-      color: "#06B6D4",
-      gradient: "url(#cyanGradient)",
-    },
-  ].filter((item) => item.value > 0)
+  const categoryData = useMemo(
+    () =>
+      [
+        {
+          name: "Electronics",
+          value: assets.filter((a) => a.category === "Electronics").length,
+          color: "#3B82F6",
+          gradient: "url(#blueGradient)",
+        },
+        {
+          name: "Vehicles",
+          value: assets.filter((a) => a.category === "Vehicles").length,
+          color: "#10B981",
+          gradient: "url(#emeraldGradient)",
+        },
+        {
+          name: "Equipment",
+          value: assets.filter((a) => a.category === "Equipment").length,
+          color: "#8B5CF6",
+          gradient: "url(#purpleGradient)",
+        },
+        {
+          name: "Furniture",
+          value: assets.filter((a) => a.category === "Furniture").length,
+          color: "#F59E0B",
+          gradient: "url(#amberGradient)",
+        },
+        {
+          name: "Mobile",
+          value: assets.filter((a) => a.category === "Mobile Devices").length,
+          color: "#EC4899",
+          gradient: "url(#pinkGradient)",
+        },
+        {
+          name: "IT Hardware",
+          value: assets.filter((a) => a.category === "IT Hardware").length,
+          color: "#06B6D4",
+          gradient: "url(#cyanGradient)",
+        },
+      ].filter((item) => item.value > 0),
+    [assets],
+  )
 
   // Status distribution data with modern colors
-  const statusData = [
-    {
-      name: "Active",
-      value: assets.filter((a) => a.status === "Active").length,
-      color: "#22C55E",
-      fill: "#22C55E",
-    },
-    {
-      name: "Maintenance",
-      value: assets.filter((a) => a.status === "Maintenance").length,
-      color: "#F59E0B",
-      fill: "#F59E0B",
-    },
-    {
-      name: "Retired",
-      value: assets.filter((a) => a.status === "Retired").length,
-      color: "#EF4444",
-      fill: "#EF4444",
-    },
-  ].filter((item) => item.value > 0)
+  const statusData = useMemo(
+    () =>
+      [
+        {
+          name: "Active",
+          value: assets.filter((a) => a.status === "Active").length,
+          color: "#22C55E",
+          fill: "#22C55E",
+        },
+        {
+          name: "Maintenance",
+          value: assets.filter((a) => a.status === "Maintenance").length,
+          color: "#F59E0B",
+          fill: "#F59E0B",
+        },
+        {
+          name: "Retired",
+          value: assets.filter((a) => a.status === "Retired").length,
+          color: "#EF4444",
+          fill: "#EF4444",
+        },
+      ].filter((item) => item.value > 0),
+    [assets],
+  )
 
   // Enhanced trend data with multiple metrics
-  const trendData = [
-    {
-      month: "Jan",
-      assets: Math.max(1, assets.length - 30),
-      value: Math.max(10, assets.reduce((sum, a) => sum + (a.value || 0), 0) / 1000 - 50),
-      maintenance: Math.max(0, assets.filter((a) => a.status === "Maintenance").length - 2),
-    },
-    {
-      month: "Feb",
-      assets: Math.max(1, assets.length - 25),
-      value: Math.max(15, assets.reduce((sum, a) => sum + (a.value || 0), 0) / 1000 - 40),
-      maintenance: Math.max(0, assets.filter((a) => a.status === "Maintenance").length - 1),
-    },
-    {
-      month: "Mar",
-      assets: Math.max(1, assets.length - 20),
-      value: Math.max(20, assets.reduce((sum, a) => sum + (a.value || 0), 0) / 1000 - 30),
-      maintenance: Math.max(0, assets.filter((a) => a.status === "Maintenance").length - 1),
-    },
-    {
-      month: "Apr",
-      assets: Math.max(1, assets.length - 15),
-      value: Math.max(25, assets.reduce((sum, a) => sum + (a.value || 0), 0) / 1000 - 20),
-      maintenance: Math.max(0, assets.filter((a) => a.status === "Maintenance").length),
-    },
-    {
-      month: "May",
-      assets: Math.max(1, assets.length - 10),
-      value: Math.max(30, assets.reduce((sum, a) => sum + (a.value || 0), 0) / 1000 - 10),
-      maintenance: Math.max(0, assets.filter((a) => a.status === "Maintenance").length),
-    },
-    {
-      month: "Jun",
-      assets: assets.length,
-      value: assets.reduce((sum, a) => sum + (a.value || 0), 0) / 1000,
-      maintenance: assets.filter((a) => a.status === "Maintenance").length,
-    },
-  ]
+  const trendData = useMemo(
+    () =>
+      [
+        {
+          month: "Jan",
+          assets: Math.max(1, assets.length - 30),
+          value: Math.max(10, assets.reduce((sum, a) => sum + (a.value || 0), 0) / 1000 - 50),
+          maintenance: Math.max(0, assets.filter((a) => a.status === "Maintenance").length - 2),
+        },
+        {
+          month: "Feb",
+          assets: Math.max(1, assets.length - 25),
+          value: Math.max(15, assets.reduce((sum, a) => sum + (a.value || 0), 0) / 1000 - 40),
+          maintenance: Math.max(0, assets.filter((a) => a.status === "Maintenance").length - 1),
+        },
+        {
+          month: "Mar",
+          assets: Math.max(1, assets.length - 20),
+          value: Math.max(20, assets.reduce((sum, a) => sum + (a.value || 0), 0) / 1000 - 30),
+          maintenance: Math.max(0, assets.filter((a) => a.status === "Maintenance").length - 1),
+        },
+        {
+          month: "Apr",
+          assets: Math.max(1, assets.length - 15),
+          value: Math.max(25, assets.reduce((sum, a) => sum + (a.value || 0), 0) / 1000 - 20),
+          maintenance: Math.max(0, assets.filter((a) => a.status === "Maintenance").length),
+        },
+        {
+          month: "May",
+          assets: Math.max(1, assets.length - 10),
+          value: Math.max(30, assets.reduce((sum, a) => sum + (a.value || 0), 0) / 1000 - 10),
+          maintenance: Math.max(0, assets.filter((a) => a.status === "Maintenance").length),
+        },
+        {
+          month: "Jun",
+          assets: assets.length,
+          value: assets.reduce((sum, a) => sum + (a.value || 0), 0) / 1000,
+          maintenance: assets.filter((a) => a.status === "Maintenance").length,
+        },
+      ],
+    [assets],
+  )
 
   const CustomTooltip = ({ active, payload, label }: any) => {
     if (active && payload && payload.length) {
@@ -211,30 +245,36 @@ export function ModernCharts() {
 
       <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-8">
         {/* Enhanced Category Distribution */}
-        <div className="bg-white/80 backdrop-blur-sm rounded-2xl border border-gray-200/50 p-6 shadow-xl hover:shadow-2xl transition-all duration-300">
+        <div
+          ref={pieChartRef}
+          className="bg-white/80 backdrop-blur-sm rounded-2xl border border-gray-200/50 p-6 shadow-xl hover:shadow-2xl transition-all duration-300"
+        >
           <div className="flex items-center justify-between mb-6">
             <h4 className="text-lg font-semibold text-gray-900">Asset Distribution</h4>
             <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse"></div>
           </div>
           <div className="h-64">
-            <ResponsiveContainer width="100%" height="100%">
-              <PieChart>
-                <Pie
-                  data={categoryData}
-                  cx="50%"
-                  cy="50%"
-                  innerRadius={50}
-                  outerRadius={90}
-                  paddingAngle={3}
-                  dataKey="value"
-                >
-                  {categoryData.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={entry.color} stroke="white" strokeWidth={2} />
-                  ))}
-                </Pie>
-                <Tooltip content={<CustomTooltip />} />
-              </PieChart>
-            </ResponsiveContainer>
+            {pieChartInView && (
+              <ResponsiveContainer width="100%" height="100%" key={pieChartKey}>
+                <PieChart>
+                  <Pie
+                    data={categoryData}
+                    cx="50%"
+                    cy="50%"
+                    innerRadius={50}
+                    outerRadius={90}
+                    paddingAngle={3}
+                    dataKey="value"
+                    isAnimationActive={true}
+                  >
+                    {categoryData.map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={entry.color} stroke="white" strokeWidth={2} />
+                    ))}
+                  </Pie>
+                  <Tooltip content={<CustomTooltip />} />
+                </PieChart>
+              </ResponsiveContainer>
+            )}
           </div>
           <div className="mt-6 space-y-3">
             {categoryData.map((item, index) => (
@@ -250,70 +290,80 @@ export function ModernCharts() {
         </div>
 
         {/* Enhanced Status Overview */}
-        <div className="bg-white/80 backdrop-blur-sm rounded-2xl border border-gray-200/50 p-6 shadow-xl hover:shadow-2xl transition-all duration-300">
+        <div
+          ref={barChartRef}
+          className="bg-white/80 backdrop-blur-sm rounded-2xl border border-gray-200/50 p-6 shadow-xl hover:shadow-2xl transition-all duration-300"
+        >
           <div className="flex items-center justify-between mb-6">
             <h4 className="text-lg font-semibold text-gray-900">Asset Status</h4>
             <div className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></div>
           </div>
           <div className="h-64">
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={statusData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
-                <XAxis dataKey="name" tick={{ fontSize: 12, fill: "#64748b" }} axisLine={{ stroke: "#e2e8f0" }} />
-                <YAxis tick={{ fontSize: 12, fill: "#64748b" }} axisLine={{ stroke: "#e2e8f0" }} />
-                <Tooltip content={<CustomTooltip />} />
-                <Bar dataKey="value" radius={[8, 8, 0, 0]} stroke="white" strokeWidth={2}>
-                  {statusData.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={entry.color} />
-                  ))}
-                </Bar>
-              </BarChart>
-            </ResponsiveContainer>
+            {barChartInView && (
+              <ResponsiveContainer width="100%" height="100%" key={barChartKey}>
+                <BarChart data={statusData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
+                  <XAxis dataKey="name" tick={{ fontSize: 12, fill: "#64748b" }} axisLine={{ stroke: "#e2e8f0" }} />
+                  <YAxis tick={{ fontSize: 12, fill: "#64748b" }} axisLine={{ stroke: "#e2e8f0" }} />
+                  <Tooltip content={<CustomTooltip />} />
+                  <Bar dataKey="value" radius={[8, 8, 0, 0]} stroke="white" strokeWidth={2}>
+                    {statusData.map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={entry.color} />
+                    ))}
+                  </Bar>
+                </BarChart>
+              </ResponsiveContainer>
+            )}
           </div>
         </div>
 
         {/* Enhanced Growth Trend */}
-        <div className="bg-white/80 backdrop-blur-sm rounded-2xl border border-gray-200/50 p-6 shadow-xl hover:shadow-2xl transition-all duration-300 lg:col-span-2 xl:col-span-1">
+        <div
+          ref={areaChartRef}
+          className="bg-white/80 backdrop-blur-sm rounded-2xl border border-gray-200/50 p-6 shadow-xl hover:shadow-2xl transition-all duration-300 lg:col-span-2 xl:col-span-1"
+        >
           <div className="flex items-center justify-between mb-6">
             <h4 className="text-lg font-semibold text-gray-900">Growth Trends</h4>
             <div className="w-2 h-2 bg-purple-500 rounded-full animate-pulse"></div>
           </div>
           <div className="h-64">
-            <ResponsiveContainer width="100%" height="100%">
-              <AreaChart data={trendData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
-                <defs>
-                  <linearGradient id="assetGradient" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#3B82F6" stopOpacity={0.3} />
-                    <stop offset="95%" stopColor="#3B82F6" stopOpacity={0.05} />
-                  </linearGradient>
-                  <linearGradient id="valueGradient" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#10B981" stopOpacity={0.3} />
-                    <stop offset="95%" stopColor="#10B981" stopOpacity={0.05} />
-                  </linearGradient>
-                </defs>
-                <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
-                <XAxis dataKey="month" tick={{ fontSize: 12, fill: "#64748b" }} axisLine={{ stroke: "#e2e8f0" }} />
-                <YAxis tick={{ fontSize: 12, fill: "#64748b" }} axisLine={{ stroke: "#e2e8f0" }} />
-                <Tooltip content={<CustomTooltip />} />
-                <Area
-                  type="monotone"
-                  dataKey="assets"
-                  stroke="#3B82F6"
-                  strokeWidth={3}
-                  fill="url(#assetGradient)"
-                  name="Assets"
-                />
-                <Line
-                  type="monotone"
-                  dataKey="value"
-                  stroke="#10B981"
-                  strokeWidth={3}
-                  dot={{ fill: "#10B981", strokeWidth: 2, r: 5 }}
-                  activeDot={{ r: 7, stroke: "#10B981", strokeWidth: 2 }}
-                  name="Value (K$)"
-                />
-              </AreaChart>
-            </ResponsiveContainer>
+            {areaChartInView && (
+              <ResponsiveContainer width="100%" height="100%" key={areaChartKey}>
+                <AreaChart data={trendData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
+                  <defs>
+                    <linearGradient id="assetGradient" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor="#3B82F6" stopOpacity={0.3} />
+                      <stop offset="95%" stopColor="#3B82F6" stopOpacity={0.05} />
+                    </linearGradient>
+                    <linearGradient id="valueGradient" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor="#10B981" stopOpacity={0.3} />
+                      <stop offset="95%" stopColor="#10B981" stopOpacity={0.05} />
+                    </linearGradient>
+                  </defs>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
+                  <XAxis dataKey="month" tick={{ fontSize: 12, fill: "#64748b" }} axisLine={{ stroke: "#e2e8f0" }} />
+                  <YAxis tick={{ fontSize: 12, fill: "#64748b" }} axisLine={{ stroke: "#e2e8f0" }} />
+                  <Tooltip content={<CustomTooltip />} />
+                  <Area
+                    type="monotone"
+                    dataKey="assets"
+                    stroke="#3B82F6"
+                    strokeWidth={3}
+                    fill="url(#assetGradient)"
+                    name="Assets"
+                  />
+                  <Line
+                    type="monotone"
+                    dataKey="value"
+                    stroke="#10B981"
+                    strokeWidth={3}
+                    dot={{ fill: "#10B981", strokeWidth: 2, r: 5 }}
+                    activeDot={{ r: 7, stroke: "#10B981", strokeWidth: 2 }}
+                    name="Value (K$)"
+                  />
+                </AreaChart>
+              </ResponsiveContainer>
+            )}
           </div>
           <div className="mt-6 flex items-center justify-between text-sm">
             <div className="flex items-center space-x-4">
