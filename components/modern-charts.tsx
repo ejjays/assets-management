@@ -16,7 +16,7 @@ import {
   AreaChart,
 } from "recharts"
 import { useInView } from "react-intersection-observer"
-import { useState, useEffect, useMemo } from "react"
+import { useState, useEffect, useMemo, RefObject } from "react"
 
 interface Asset {
   _id: string;
@@ -31,12 +31,14 @@ interface Asset {
 
 interface ModernChartsProps {
   assets: Asset[];
+  scrollContainerRef?: RefObject<HTMLDivElement>; // New prop for the scroll container ref
 }
 
-const useAnimateOnInView = () => {
+const useAnimateOnInView = (rootRef?: RefObject<HTMLDivElement>) => {
   const { ref, inView } = useInView({
     triggerOnce: false,
     threshold: 0.1,
+    root: rootRef?.current, // Use the provided root ref, or default to viewport
     rootMargin: "200px 0px",
   })
   const [key, setKey] = useState(0)
@@ -50,12 +52,12 @@ const useAnimateOnInView = () => {
   return { ref, key, inView }
 }
 
-export function ModernCharts({ assets = [] }: ModernChartsProps) {
+export function ModernCharts({ assets = [], scrollContainerRef }: ModernChartsProps) {
   // Using a default empty array for assets to prevent 'undefined' errors
   
-  const { ref: pieChartRef, key: pieChartKey, inView: pieChartInView } = useAnimateOnInView()
-  const { ref: barChartRef, key: barChartKey, inView: barChartInView } = useAnimateOnInView()
-  const { ref: areaChartRef, key: areaChartKey, inView: areaChartInView } = useAnimateOnInView()
+  const { ref: pieChartRef, key: pieChartKey, inView: pieChartInView } = useAnimateOnInView(scrollContainerRef)
+  const { ref: barChartRef, key: barChartKey, inView: barChartInView } = useAnimateOnInView(scrollContainerRef)
+  const { ref: areaChartRef, key: areaChartKey, inView: areaChartInView } = useAnimateOnInView(scrollContainerRef)
 
   // Modern color palette
   const modernColors = {

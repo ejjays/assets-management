@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from "react"
-import { Edit, Trash2, QrCode, MoreHorizontal, Package, Calendar, DollarSign, MapPin } from "lucide-react"
+import { Edit, Trash2, QrCode, MoreHorizontal, Package, Calendar, DollarSign, MapPin, ChevronLeft, ChevronRight } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { QRModal } from "@/components/qr-modal"
@@ -31,9 +31,27 @@ export function AssetTable({ assets = [], onEdit, onDelete, onAddAsset }: AssetT
   const [qrModalOpen, setQrModalOpen] = useState(false)
   const [selectedAsset, setSelectedAsset] = useState<Asset | null>(null)
 
-  const handleShowQR = (asset: Asset) => {
-    setSelectedAsset(asset)
-    setQrModalOpen(true)
+  // Pagination states
+  const [currentPage, setCurrentPage] = useState(1)
+  const itemsPerPage = 5 // Changed to 5 items per page as requested
+  const maxPageButtons = 5 // Maximum number of page number buttons to display
+
+  // Calculate pagination values
+  const totalPages = Math.ceil(assets.length / itemsPerPage)
+  const startIndex = (currentPage - 1) * itemsPerPage
+  const endIndex = startIndex + itemsPerPage
+  const currentAssets = assets.slice(startIndex, endIndex)
+
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page)
+  }
+
+  const handleNextPage = () => {
+    setCurrentPage((prev) => Math.min(prev + 1, totalPages))
+  }
+
+  const handlePreviousPage = () => {
+    setCurrentPage((prev) => Math.max(prev - 1, 1))
   }
 
   const getStatusColor = (status: string) => {
@@ -47,6 +65,32 @@ export function AssetTable({ assets = [], onEdit, onDelete, onAddAsset }: AssetT
       default:
         return "bg-gray-100 text-gray-800 border-gray-200"
     }
+  }
+
+  // Calculate visible page numbers
+  const getVisiblePageNumbers = () => {
+    const pages: (number | string)[] = []
+    let startPage = Math.max(1, currentPage - Math.floor(maxPageButtons / 2))
+    let endPage = Math.min(totalPages, startPage + maxPageButtons - 1)
+
+    if (endPage - startPage + 1 < maxPageButtons) {
+      startPage = Math.max(1, endPage - maxPageButtons + 1)
+    }
+
+    if (startPage > 1) {
+      pages.push(1)
+      if (startPage > 2) pages.push("...")
+    }
+
+    for (let i = startPage; i <= endPage; i++) {
+      pages.push(i)
+    }
+
+    if (endPage < totalPages) {
+      if (endPage < totalPages - 1) pages.push("...")
+      pages.push(totalPages)
+    }
+    return pages
   }
 
   if (assets.length === 0) {
@@ -69,7 +113,7 @@ export function AssetTable({ assets = [], onEdit, onDelete, onAddAsset }: AssetT
     <>
       {/* Mobile Card View */}
       <div className="block lg:hidden space-y-4">
-        {assets.map((asset) => (
+        {currentAssets.map((asset) => (
           <div
             key={asset._id?.toString() || asset.name} // Safely access _id and use name as fallback key
             className="bg-white rounded-xl border border-gray-200 p-4 hover:shadow-md transition-shadow"
@@ -95,7 +139,7 @@ export function AssetTable({ assets = [], onEdit, onDelete, onAddAsset }: AssetT
                     QR Code
                   </DropdownMenuItem>
                   <DropdownMenuItem onClick={() => onDelete(asset._id?.toString() as string)} className="text-red-600 focus:text-red-600"> {/* Safely pass _id for deletion */}
-                    <Trash2 className="w-4 h-4 mr-2" />
+                    <Trash2 className="h-4 w-4 mr-2" />
                     Delete
                   </DropdownMenuItem>
                 </DropdownMenuContent>
@@ -145,12 +189,12 @@ export function AssetTable({ assets = [], onEdit, onDelete, onAddAsset }: AssetT
             </TableRow>
           </TableHeader>
           <TableBody>
-            {assets.map((asset) => (
-              <TableRow key={asset._id?.toString() || asset.name} className="hover:bg-gray-50"> {/* Safely access _id and use name as fallback key */}
+            {currentAssets.map((asset) => (
+              <TableRow key={asset._id?.toString() || asset.name} className="hover:bg-gray-50">
                 <TableCell>
                   <div>
                     <div className="font-medium text-gray-900">{asset.name}</div>
-                    <div className="text-sm text-gray-500">ID: {asset._id?.toString() || 'N/A'}</div> {/* Safely display _id */}
+                    <div className="text-sm text-gray-500">ID: {asset._id?.toString() || 'N/A'}</div>
                   </div>
                 </TableCell>
                 <TableCell>
@@ -194,6 +238,46 @@ export function AssetTable({ assets = [], onEdit, onDelete, onAddAsset }: AssetT
           </TableBody>
         </Table>
       </div>
+
+      {/* Pagination Controls */}
+      {totalPages > 1 && (
+        <div className="flex items-center justify-center p-4 bg-white rounded-xl border border-gray-200 mt-4 space-x-2">
+          <Button
+            variant="outline"
+            onClick={handlePreviousPage}
+            disabled={currentPage === 1}
+            size="icon"
+          >
+            <ChevronLeft className="h-4 w-4" />
+          </Button>
+
+          {getVisiblePageNumbers().map((pageNumber, index) =>
+            typeof pageNumber === "number" ? (
+              <Button
+                key={pageNumber}
+                variant={currentPage === pageNumber ? "default" : "outline"}
+                onClick={() => handlePageChange(pageNumber)}
+                size="icon"
+              >
+                {pageNumber}
+              </Button>
+            ) : (
+              <span key={index} className="px-2 text-gray-500">
+                {pageNumber}
+              </span>
+            ),
+          )}
+
+          <Button
+            variant="outline"
+            onClick={handleNextPage}
+            disabled={currentPage === totalPages}
+            size="icon"
+          >
+            <ChevronRight className="h-4 w-4" />
+          </Button>
+        </div>
+      )}
 
       {/* QR Modal */}
       <QRModal isOpen={qrModalOpen} onClose={() => setQrModalOpen(false)} asset={selectedAsset} />

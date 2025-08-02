@@ -2,7 +2,6 @@
 
 import { useEffect } from "react"
 import { ModernKPICards } from "@/components/modern-kpi-cards"
-import { AssetCategoryCards } from "@/components/asset-category-cards"
 import { ModernCharts } from "@/components/modern-charts"
 import { useAssetStore } from "@/lib/asset-store"
 
@@ -40,9 +39,6 @@ export function Dashboard() {
 
       {/* KPI Cards - Pass assets as prop */}
       <ModernKPICards assets={assets} />
-
-      {/* Category Cards - Pass assets as prop */}
-      <AssetCategoryCards assets={assets} />
 
       {/* Charts - Pass assets as prop */}
       <ModernCharts assets={assets} />

@@ -1,11 +1,12 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef } from "react"
 import { SidebarProvider } from "@/components/ui/sidebar"
 import { Sidebar } from "@/components/sidebar"
 import { Dashboard } from "@/components/dashboard"
 import { AdminPanel } from "@/components/admin-panel"
 import { ModernCharts } from "@/components/modern-charts"
+import { AssetCategoryCards } from "@/components/asset-category-cards"
 import { ChatInterface } from "@/components/chat-interface"
 import { ToastContainer } from "@/components/toast-container"
 import { useAssetStore } from "@/lib/asset-store"
@@ -13,6 +14,8 @@ import { useAssetStore } from "@/lib/asset-store"
 export default function Home() {
   const [activeView, setActiveView] = useState<"dashboard" | "admin" | "analytics">("dashboard")
   const [isChatOpen, setIsChatOpen] = useState(false)
+  const [analyticsChartKey, setAnalyticsChartKey] = useState(0); // State to force chart re-render
+  const analyticsScrollRef = useRef<HTMLDivElement>(null); // Ref for the analytics scroll container
   
   // Add asset store to fetch assets for analytics
   const { assets, loading, fetchAssets } = useAssetStore()
@@ -21,6 +24,13 @@ export default function Home() {
   useEffect(() => {
     fetchAssets()
   }, [fetchAssets])
+
+  // Effect to reset chart key when analytics view becomes active
+  useEffect(() => {
+    if (activeView === "analytics") {
+      setAnalyticsChartKey(prevKey => prevKey + 1);
+    }
+  }, [activeView]);
 
   return (
     <SidebarProvider>
@@ -35,7 +45,7 @@ export default function Home() {
               <AdminPanel />
             ) : activeView === "analytics" ? (
               // Add a wrapper with header and pass assets prop
-              <div className="flex-1 space-y-4 p-4 md:p-6 lg:p-8 pt-16 md:pt-6">
+              <div ref={analyticsScrollRef} className="flex-1 space-y-4 p-4 md:p-6 lg:p-8 pt-16 md:pt-6">
                 {/* Header */}
                 <div className="flex flex-col space-y-2 md:flex-row md:items-center md:justify-between md:space-y-0">
                   <div>
@@ -48,13 +58,16 @@ export default function Home() {
                   </div>
                 </div>
 
-                {/* Show loading or charts */}
+                {/* Show loading or cards and charts */}
                 {loading ? (
                   <div className="flex items-center justify-center h-64">
                     <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-500"></div>
                   </div>
                 ) : (
-                  <ModernCharts assets={assets} />
+                  <>
+                    <AssetCategoryCards assets={assets} />
+                    <ModernCharts key={analyticsChartKey} assets={assets} scrollContainerRef={analyticsScrollRef} />
+                  </>
                 )}
               </div>
             ) : null}
