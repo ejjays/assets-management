@@ -29,6 +29,12 @@ export async function GET(req: NextRequest) {
 
 export async function POST(req: NextRequest) {
   try {
+    // Add detailed environment debugging
+    console.log('NODE_ENV:', process.env.NODE_ENV);
+    console.log('MONGODB_URI exists:', !!process.env.MONGODB_URI);
+    console.log('MONGODB_URI length:', process.env.MONGODB_URI?.length || 0);
+    console.log('MONGODB_URI starts with:', process.env.MONGODB_URI?.substring(0, 20) || 'undefined');
+
     console.log('Attempting to connect to MongoDB with URI:', process.env.MONGODB_URI ? 'URI present' : 'URI MISSING');
     const client: MongoClient = await clientPromise;
     const db = client.db(DB_NAME);
@@ -56,8 +62,11 @@ export async function POST(req: NextRequest) {
     // Ensure _id is returned as a string
     return NextResponse.json({ ...newAsset, _id: result.insertedId.toString() }, { status: 201 });
   } catch (error) {
-    console.error('Error creating asset (server-side):', error);
-    return NextResponse.json({ message: `Failed to create asset: ${(error as Error).message}` }, { status: 500 });
+    console.error('Detailed error in POST:', error);
+    return NextResponse.json({ 
+      message: `Failed to create asset: ${(error as Error).message}`,
+      stack: (error as Error).stack 
+    }, { status: 500 });
   }
 }
 

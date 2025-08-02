@@ -1,5 +1,7 @@
 import { MongoClient } from 'mongodb';
 
+console.log('Loading mongodb.ts - MONGODB_URI exists:', !!process.env.MONGODB_URI);
+
 if (!process.env.MONGODB_URI) {
   throw new Error('Invalid/Missing environment variable: "MONGODB_URI"');
 }
