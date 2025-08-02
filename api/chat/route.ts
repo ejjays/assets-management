@@ -1,10 +1,15 @@
 import { GoogleGenerativeAI } from "@google/generative-ai"
 import { type NextRequest, NextResponse } from "next/server"
 
-const genAI = new GoogleGenerativeAI("AIzaSyCZJqZ1RTRgliCRJz-cQzY84dDZNbQEm7Y")
-
 export async function POST(request: NextRequest) {
   try {
+    const geminiApiKey = process.env.GEMINI_API_KEY;
+
+    if (!geminiApiKey) {
+      return NextResponse.json({ error: "Gemini API key not configured. Please set GEMINI_API_KEY in your environment variables." }, { status: 500 });
+    }
+
+    const genAI = new GoogleGenerativeAI(geminiApiKey)
     const { message, assets } = await request.json()
 
     if (!message) {
@@ -48,7 +53,7 @@ CURRENT REAL-TIME ASSET DATABASE (${new Date().toLocaleString()}):
 ASSET CATEGORIES BREAKDOWN:
 ${Object.entries(categoryBreakdown)
   .map(([category, count]) => `- ${category}: ${count} assets`)
-  .join("\n")}
+  .join("\\n")}
 
 COMPLETE ASSET LIST:
 ${assets
@@ -56,7 +61,7 @@ ${assets
     (asset: any) =>
       `- ${asset.id}: "${asset.name}" | Category: ${asset.category} | Status: ${asset.status} | Assigned: ${asset.assignedTo} | Value: $${asset.value} | Location: ${asset.location || "Not specified"} | Purchase: ${asset.purchaseDate}`,
   )
-  .join("\n")}
+  .join("\\n")}
 
 RECENT ASSETS (Last 5 by purchase date):
 ${recentAssets
@@ -64,7 +69,7 @@ ${recentAssets
     (asset: any) =>
       `- ${asset.id}: "${asset.name}" (${asset.category}, ${asset.status}, purchased ${asset.purchaseDate})`,
   )
-  .join("\n")}
+  .join("\\n")}
 
 FORMATTING INSTRUCTIONS:
 1. ALWAYS format your responses using Markdown for better readability
@@ -73,7 +78,7 @@ FORMATTING INSTRUCTIONS:
 4. Use *italics* for emphasis and notes
 5. Use bullet points (-) and numbered lists (1.) for structured data
 6. Use tables when showing multiple assets with similar data
-7. Use code blocks (\`\`\`) for asset IDs and technical information
+7. Use code blocks (\\\`\\\`\\\`) for asset IDs and technical information
 8. Use blockquotes (>) for important warnings or recommendations
 9. Use emojis sparingly but effectively for visual appeal (📊 📈 🔍 ⚠️ ✅ ❌)
 10. Structure responses with clear sections and good spacing
@@ -83,7 +88,7 @@ RESPONSE GUIDELINES:
 2. When users ask about specific assets, search through the complete asset list
 3. Provide accurate counts and information based on the live data
 4. If an asset exists in the list, provide detailed information about it
-5. If an asset doesn't exist, clearly state it's not found in the current database
+5. If an asset doesn\'t exist, clearly state it\'s not found in the current database
 6. Be helpful with suggestions for asset management and optimization
 7. Use a professional but friendly tone
 8. Always reference the actual asset IDs and names from the live data

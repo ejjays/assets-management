@@ -1,348 +1,109 @@
+import { GoogleGenerativeAI } from "@google/generative-ai"
 import { type NextRequest, NextResponse } from "next/server"
 
 export async function POST(request: NextRequest) {
   try {
+    const geminiApiKey = process.env.GEMINI_API_KEY;
+
+    if (!geminiApiKey) {
+      return NextResponse.json({ error: "Gemini API key not configured. Please set GEMINI_API_KEY in your environment variables." }, { status: 500 });
+    }
+
+    const genAI = new GoogleGenerativeAI(geminiApiKey)
     const { message, assets } = await request.json()
-
-    // Format asset data for the prompt
-    const assetDataString = assets && assets.length > 0
-      ? assets.map((asset: any) => `Name: ${asset.name}, Category: ${asset.category}, Status: ${asset.status}`).join('\\n')
- : "No assets available."
-
-    const prompt = `The user is asking a question about their assets. Here is a list of their assets:\\n\\n${assetDataString}\\n\\nUser's question: ${message}\\n\\nBased on the provided asset information, please answer the user's question. If the question cannot be answered with the provided asset data, politely inform the user and suggest what you *can* help with regarding their assets (e.g., listing assets, searching, maintenance, stock, reports).`
 
     if (!message) {
       return NextResponse.json({ error: "Message is required" }, { status: 400 })
     }
 
-    const lowerMessage = message.toLowerCase().trim()
-    const assetCount = assets?.length || 0
-
-    // Calculate some basic stats for responses
-    const activeAssets = Math.floor(assetCount * 0.85)
-    const maintenanceAssets = Math.floor(assetCount * 0.1)
-    const retiredAssets = Math.floor(assetCount * 0.05)
-
-    let response = ""
-
-    // Enhanced keyword matching with multiple conditions
-    if (
-      lowerMessage.includes("show all") ||
-      lowerMessage.includes("all assets") ||
-      lowerMessage.includes("list assets")
-    ) {
-      response = `# Asset Overview 📊
-
-You currently have **${assetCount} assets** in your system:
-
-## Asset Categories:
-- **Electronics**: Laptops, monitors, phones, tablets
-- **Vehicles**: Company cars, delivery trucks, motorcycles  
-- **Equipment**: Manufacturing tools, office equipment, machinery
-- **Furniture**: Desks, chairs, storage units, tables
-- **IT Hardware**: Servers, networking equipment, printers
-
-## Current Status:
-- ✅ **Active Assets**: ${activeAssets} (${Math.round((activeAssets / assetCount) * 100)}%)
-- 🔧 **Under Maintenance**: ${maintenanceAssets} (${Math.round((maintenanceAssets / assetCount) * 100)}%)
-- 🚫 **Retired**: ${retiredAssets} (${Math.round((retiredAssets / assetCount) * 100)}%)
-
-## Quick Actions:
-- View detailed asset table in the main dashboard
-- Generate QR codes for asset tracking
-- Export asset data for reporting
-
-Would you like me to show details for a specific category?`
-    } else if (lowerMessage.includes("find") || lowerMessage.includes("search") || lowerMessage.includes("look for")) {
-      response = `# Asset Search 🔍
-
-I can help you find specific assets! Here are some ways to search:
-
-## Search Methods:
-- **By Name**: "Find Dell laptop" or "Show iPhone 13"
-- **By Category**: "Show all vehicles" or "List furniture"
-- **By Status**: "Find maintenance items" or "Show active assets"
-- **By Location**: "Assets in Building A" or "Items in warehouse"
-- **By ID**: "Show asset #12345" or "Find ID A001"
-
-## Current Asset Categories Available:
-${
-  assetCount > 0
-    ? `
-- **Electronics** (estimated ${Math.floor(assetCount * 0.3)} items)
-- **Vehicles** (estimated ${Math.floor(assetCount * 0.15)} items)
-- **Equipment** (estimated ${Math.floor(assetCount * 0.25)} items)
-- **Furniture** (estimated ${Math.floor(assetCount * 0.2)} items)
-- **IT Hardware** (estimated ${Math.floor(assetCount * 0.1)} items)
-`
-    : "No assets found in database"
-}
-
-## Quick Search Tips:
-- Be specific: "MacBook Pro" instead of just "laptop"
-- Use status filters: "active printers" or "broken chairs"
-- Try location-based searches: "conference room assets"
-
-What specific asset are you looking for?`
-    } else if (lowerMessage.includes("laptop") || lowerMessage.includes("computer") || lowerMessage.includes("pc")) {
-      const laptopCount = Math.floor(assetCount * 0.15) || 5
-      response = `# Laptop Assets 💻
-
-## Current Laptop Inventory:
-- **Dell Latitude Series**: ${Math.floor(laptopCount * 0.4)} units
-- **MacBook Pro**: ${Math.floor(laptopCount * 0.3)} units  
-- **HP EliteBook**: ${Math.floor(laptopCount * 0.2)} units
-- **Lenovo ThinkPad**: ${Math.floor(laptopCount * 0.1)} units
-
-## Status Overview:
-- **Total Laptops**: ${laptopCount} units
-- **In Use**: ${Math.floor(laptopCount * 0.8)} units (${Math.round(80)}%)
-- **Available**: ${Math.floor(laptopCount * 0.15)} units (${Math.round(15)}%)
-- **Under Maintenance**: ${Math.floor(laptopCount * 0.05)} units (${Math.round(5)}%)
-
-## Upcoming Actions:
-⚠️ **${Math.floor(laptopCount * 0.1)}** laptops due for maintenance next week  
-📅 **${Math.floor(laptopCount * 0.15)}** laptops warranty expiring in 60 days  
-💰 **${Math.floor(laptopCount * 0.2)}** laptops eligible for replacement (>4 years old)
-
-## Quick Actions:
-- Check specific laptop by serial number
-- Schedule maintenance for aging devices
-- Request new laptop assignment
-- View laptop usage analytics
-
-Need details on a specific laptop model or want to assign one?`
-    } else if (
-      lowerMessage.includes("maintenance") ||
-      lowerMessage.includes("repair") ||
-      lowerMessage.includes("service")
-    ) {
-      response = `# Maintenance Schedule 🔧
-
-## Items Due for Maintenance:
-
-### **This Week:**
-- **Vehicle #V001** - Oil change & inspection (Due: Tomorrow)
-- **Printer #P045** - Routine cleaning (Due: Friday)
-- **AC Unit #AC12** - Filter replacement (Due: Thursday)
-- **Laptop #L234** - Hardware diagnostic (Due: Wednesday)
-
-### **Next Week:**
-- **Server #S001** - System update & backup (Due: Monday)
-- **Forklift #F003** - Safety inspection (Due: Wednesday)
-- **Generator #G002** - Monthly service check (Due: Friday)
-- **Fire System #FS01** - Quarterly inspection (Due: Saturday)
-
-### **Overdue (Action Required):**
-⚠️ **Generator #G001** - Annual service (7 days overdue)  
-⚠️ **Fire Extinguisher #FE23** - Safety inspection (3 days overdue)
-⚠️ **Elevator #EL01** - Monthly check (2 days overdue)
-
-## Maintenance Statistics:
-- **Scheduled This Month**: ${Math.floor(assetCount * 0.3)} items
-- **Completed**: ${Math.floor(assetCount * 0.2)} items (67%)
-- **Pending**: ${Math.floor(assetCount * 0.08)} items (27%)
-- **Overdue**: ${Math.floor(assetCount * 0.02)} items (6%) ⚠️
-
-## Quick Actions:
-- Schedule new maintenance tasks
-- Send reminder notifications
-- View maintenance history
-- Generate maintenance reports
-
-Would you like me to schedule maintenance or send reminders to technicians?`
-    } else if (lowerMessage.includes("stock") || lowerMessage.includes("inventory") || lowerMessage.includes("low")) {
-      response = `# Inventory & Stock Alert ⚠️
-
-## Items Requiring Attention:
-
-### **Critical Stock (< 5 units):**
-- **Laptop Chargers**: 2 remaining ⚠️
-- **Office Chairs**: 3 remaining ⚠️  
-- **Mobile Phones**: 1 remaining 🚨
-- **Desk Lamps**: 4 remaining ⚠️
-
-### **Low Stock (< 10 units):**
-- **Computer Monitors**: 7 remaining
-- **Wireless Keyboards**: 8 remaining
-- **USB Cables**: 6 remaining
-- **Printer Cartridges**: 9 remaining
-
-### **Adequate Stock (10+ units):**
-- **Desks**: 15 available ✅
-- **Network Cables**: 25 available ✅
-- **Power Strips**: 18 available ✅
-
-## Procurement Recommendations:
-🛒 **Order immediately**: Laptop chargers, mobile phones  
-📋 **Plan for next month**: Office chairs, desk lamps  
-✅ **Monitor closely**: Monitors, keyboards, USB cables
-
-## Budget Impact:
-- **Immediate orders needed**: ~$2,500
-- **Planned purchases**: ~$4,200
-- **Total monthly budget**: ~$6,700
-
-Would you like me to help create purchase orders or set up automatic reorder alerts?`
-    } else if (lowerMessage.includes("vehicle") || lowerMessage.includes("car") || lowerMessage.includes("truck")) {
-      const vehicleCount = Math.floor(assetCount * 0.1) || 3
-      response = `# Vehicle Fleet 🚗
-
-## Current Fleet Overview:
-- **Company Cars**: ${Math.floor(vehicleCount * 0.6)} vehicles
-- **Delivery Trucks**: ${Math.floor(vehicleCount * 0.3)} vehicles
-- **Service Vans**: ${Math.floor(vehicleCount * 0.1)} vehicles
-
-## Fleet Status:
-- **Active/In Use**: ${Math.floor(vehicleCount * 0.8)} vehicles (${Math.round(80)}%)
-- **Available**: ${Math.floor(vehicleCount * 0.15)} vehicles (${Math.round(15)}%)
-- **Under Maintenance**: ${Math.floor(vehicleCount * 0.05)} vehicles (${Math.round(5)}%)
-
-## Upcoming Maintenance:
-🔧 **Oil Changes**: 2 vehicles due this week  
-🔍 **Inspections**: 1 vehicle due next week  
-🛞 **Tire Rotations**: 3 vehicles due this month
-
-## Fleet Analytics:
-- **Average Mileage**: 45,000 miles
-- **Fuel Efficiency**: 28.5 MPG average
-- **Maintenance Cost**: $1,200/month average
-
-## Quick Actions:
-- Schedule vehicle maintenance
-- Check vehicle availability
-- View fuel consumption reports
-- Track vehicle locations
-
-Need to book a vehicle or schedule maintenance?`
-    } else if (
-      lowerMessage.includes("report") ||
-      lowerMessage.includes("analytics") ||
-      lowerMessage.includes("statistics")
-    ) {
-      response = `# Asset Analytics Report 📈
-
-## Executive Summary:
-**Total Assets**: ${assetCount}  
-**Total Value**: $${(assetCount * 1250).toLocaleString()}  
-**Monthly Depreciation**: $${(assetCount * 45).toLocaleString()}
-
-## Asset Distribution:
-- **Electronics**: ${Math.round(assetCount * 0.35)} (35%)
-- **Equipment**: ${Math.round(assetCount * 0.25)} (25%)
-- **Furniture**: ${Math.round(assetCount * 0.2)} (20%)
-- **Vehicles**: ${Math.round(assetCount * 0.15)} (15%)
-- **IT Hardware**: ${Math.round(assetCount * 0.05)} (5%)
-
-## Performance Metrics:
-- **Asset Utilization**: 87% (Above target of 85%)
-- **Maintenance Compliance**: 94% (Excellent)
-- **Replacement Rate**: 12% annually (Within budget)
-- **Cost per Asset**: $1,250 average
-
-## Key Insights:
-✅ **High utilization** across all categories  
-⚠️ **Aging laptop inventory** needs attention  
-💰 **Cost optimization** opportunity in furniture  
-🔧 **Preventive maintenance** program working well
-
-## Recommendations:
-1. **Refresh laptop inventory** (15% are >4 years old)
-2. **Optimize furniture allocation** (20% underutilized)
-3. **Expand preventive maintenance** to reduce breakdowns
-4. **Consider leasing** for high-depreciation items
-
-Would you like a detailed breakdown of any specific category?`
-    } else if (
-      lowerMessage.includes("help") ||
-      lowerMessage.includes("what can you do") ||
-      lowerMessage.includes("commands")
-    ) {
-      response = `# Asset Management Assistant 🤖
-
-I'm your **AI Asset Assistant** with access to your **live asset database** (${assetCount} assets).
-
-## 📊 **Analytics & Reports**
-- Asset utilization statistics and trends
-- Maintenance schedules and alerts
-- Cost analysis and depreciation tracking
-- Category-wise performance breakdowns
-
-## 🔍 **Search & Discovery**
-- Find specific assets by name, ID, or category
-- Filter by status, location, or department
-- Generate custom asset lists and reports
-- Quick inventory lookups
-
-## 📋 **Management Tasks**
-- Asset lifecycle tracking and monitoring
-- Maintenance recommendations and scheduling
-- Procurement suggestions and alerts
-- Compliance monitoring and reporting
-
-## 💡 **Insights & Optimization**
-- Usage pattern analysis and recommendations
-- Cost optimization opportunities
-- Replacement planning and budgeting
-- Risk assessments and mitigation
-
-## 🚀 **Quick Commands to Try:**
-- *"Show all assets"* - Complete inventory overview
-- *"Find laptops"* - Search specific asset types
-- *"What needs maintenance?"* - Maintenance schedule
-- *"Check low stock"* - Inventory alerts
-- *"Generate report"* - Analytics and insights
-- *"Show vehicles"* - Fleet management info
-
-## 💬 **Natural Language:**
-You can ask me questions naturally like:
-- "How many laptops do we have?"
-- "Which assets need repair?"
-- "Show me the monthly report"
-- "What's our most expensive equipment?"
-
-**I'm here to help you manage your ${assetCount} assets more effectively!**`
-    } else {
-      // More conversational and less rigid response for unrecognized queries
-      response = `Hello! I'm here to assist you with your asset management. I didn't quite understand your last message, "${message}", but I can help with a variety of tasks related to your ${assetCount} assets.
-
-You can ask me about:
-- **Asset inventory and details** (e.g., "Show all assets", "Find a specific laptop")
-- **Maintenance schedules and needs** (e.g., "What needs maintenance?")
-- **Stock levels and inventory alerts** (e.g., "Check low stock")
-- **Reports and analytics** (e.g., "Generate a report")
-- **Specific asset categories** (e.g., "Tell me about vehicles")
-
-Please try rephrasing your question, or choose from one of the suggestions above. What would you like to know or do regarding your assets?`
+    if (!assets || !Array.isArray(assets)) {
+      return NextResponse.json({ error: "Assets data is required" }, { status: 400 })
     }
 
-    return NextResponse.json({
-      message: response,
-      timestamp: new Date().toISOString(),
-    })
+    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" })
+
+    // Calculate real-time statistics
+    const totalAssets = assets.length
+    const assetsInUse = assets.filter((asset: any) => asset.status === "In Use").length
+    const inRepair = assets.filter((asset: any) => asset.status === "In Repair").length
+    const inStorage = assets.filter((asset: any) => asset.status === "In Storage").length
+    const decommissioned = assets.filter((asset: any) => asset.status === "Decommissioned").length
+
+    // Calculate category breakdown
+    const categoryBreakdown = assets.reduce((acc: any, asset: any) => {
+      acc[asset.category] = (acc[asset.category] || 0) + 1
+      return acc
+    }, {})
+
+    // Get recent assets (last 5 added)
+    const recentAssets = assets
+      .sort((a: any, b: any) => new Date(b.purchaseDate).getTime() - new Date(a.purchaseDate).getTime())
+      .slice(0, 5)
+
+    // Enhanced system prompt with markdown formatting instructions
+    const systemPrompt = `You are an AI assistant for an Asset Management System. You help users manage, track, and get insights about their company assets.
+
+CURRENT REAL-TIME ASSET DATABASE (${new Date().toLocaleString()}):
+- Total Assets: ${totalAssets}
+- Assets In Use: ${assetsInUse}
+- In Storage: ${inStorage}
+- In Repair: ${inRepair}
+- Decommissioned: ${decommissioned}
+
+ASSET CATEGORIES BREAKDOWN:
+${Object.entries(categoryBreakdown)
+  .map(([category, count]) => `- ${category}: ${count} assets`)
+  .join("\\n")}
+
+COMPLETE ASSET LIST:
+${assets
+  .map(
+    (asset: any) =>
+      `- ${asset.id}: "${asset.name}" | Category: ${asset.category} | Status: ${asset.status} | Assigned: ${asset.assignedTo} | Value: $${asset.value} | Location: ${asset.location || "Not specified"} | Purchase: ${asset.purchaseDate}`,
+  )
+  .join("\\n")}
+
+RECENT ASSETS (Last 5 by purchase date):
+${recentAssets
+  .map(
+    (asset: any) =>
+      `- ${asset.id}: "${asset.name}" (${asset.category}, ${asset.status}, purchased ${asset.purchaseDate})`,
+  )
+  .join("\\n")}
+
+FORMATTING INSTRUCTIONS:
+1. ALWAYS format your responses using Markdown for better readability
+2. Use headers (# ## ###) to organize information
+3. Use **bold** for important information like asset names, IDs, and key metrics
+4. Use *italics* for emphasis and notes
+5. Use bullet points (-) and numbered lists (1.) for structured data
+6. Use tables when showing multiple assets with similar data
+7. Use code blocks (\\\`\\\`\\\`) for asset IDs and technical information
+8. Use blockquotes (>) for important warnings or recommendations
+9. Use emojis sparingly but effectively for visual appeal (📊 📈 🔍 ⚠️ ✅ ❌)
+10. Structure responses with clear sections and good spacing
+
+RESPONSE GUIDELINES:
+1. Use ONLY the real-time data provided above - this is the current, live asset database
+2. When users ask about specific assets, search through the complete asset list
+3. Provide accurate counts and information based on the live data
+4. If an asset exists in the list, provide detailed information about it
+5. If an asset doesn\'t exist, clearly state it\'s not found in the current database
+6. Be helpful with suggestions for asset management and optimization
+7. Use a professional but friendly tone
+8. Always reference the actual asset IDs and names from the live data
+9. When showing multiple assets, use tables or structured lists
+10. Include relevant statistics and insights when appropriate
+
+User Question: ${message}`
+
+    const result = await model.generateContent(systemPrompt)
+    const response = await result.response
+    const text = response.text()
+
+    return NextResponse.json({ response: text })
   } catch (error) {
-    console.error("Chat API error:", error)
-    return NextResponse.json(
-      {
-        message: `# Service Temporarily Unavailable 🔧
-
-I'm experiencing some technical difficulties right now. Here's what you can try:
-
-## Alternative Actions:
-- **Refresh the page** and try again
-- **Check your internet connection**
-- **Use the main dashboard** for asset management
-- **Contact support** if the issue persists
-
-## Quick Asset Actions Available:
-- View assets in the main table
-- Add new assets using the "+" button
-- Generate QR codes for existing assets
-- Export asset data for offline access
-
-I'll be back online shortly! 🤖`,
-      },
-      { status: 200 },
-    )
+    console.error("Error calling Gemini API:", error)
+    return NextResponse.json({ error: "Failed to generate response. Please try again." }, { status: 500 })
   }
 }
