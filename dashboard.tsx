@@ -5,7 +5,7 @@ import { ModernKPICards } from "@/components/modern-kpi-cards"
 import { AssetCategoryCards } from "@/components/asset-category-cards"
 import { ModernCharts } from "@/components/modern-charts"
 import { AssetTable } from "@/components/asset-table"
-import { AssetModal } from "@/components/asset-modal" // Assuming this is your modal for add/edit
+import { AssetModal } from "@/components/asset-modal" 
 import { Button } from "@/components/ui/button"
 import { PlusCircle } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
@@ -41,6 +41,15 @@ export function Dashboard() {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
       const data: Asset[] = await response.json();
+      
+      // --- NEW LOG FOR DEBUGGING --- 
+      console.log("Fetched assets data:", data);
+      if (data.length > 0) {
+        console.log("Type of _id for first asset:", typeof data[0]._id);
+        console.log("Value of _id for first asset:", data[0]._id);
+      }
+      // --- END NEW LOG --- 
+
       setAssets(data);
     } catch (e) {
       console.error("Failed to fetch assets:", e);
@@ -172,9 +181,9 @@ export function Dashboard() {
           </Button>
         </div>
 
-        <ModernKPICards assets={assets} /> {/* Pass assets to KPI cards */}
-        <AssetCategoryCards assets={assets} /> {/* Pass assets to Category Cards */}
-        <ModernCharts assets={assets} /> {/* Pass assets to Charts */}
+        <ModernKPICards assets={assets} />
+        <AssetCategoryCards assets={assets} />
+        <ModernCharts assets={assets} />
         
         <AssetTable 
           assets={assets}

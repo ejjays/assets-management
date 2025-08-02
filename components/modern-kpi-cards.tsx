@@ -111,9 +111,7 @@ export function ModernKPICards({ assets = [] }: ModernKPICardsProps) {
 
           {/* Content */}
           <div className="relative z-10">
-            <div
-              className={`p-3 rounded-xl bg-gradient-to-br ${kpi.gradient} transition-transform duration-300 group-hover:scale-110`}
-            >
+          <div className={`w-16 h-16 rounded-xl flex items-center justify-center bg-gradient-to-br mb-2 ${kpi.gradient} transition-transform duration-300 group-hover:scale-110`}>
               <kpi.icon className="h-6 w-6 text-white" />
             </div>
             <div

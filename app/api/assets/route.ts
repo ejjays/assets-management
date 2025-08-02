@@ -14,7 +14,13 @@ export async function GET(req: NextRequest) {
 
     const assets = await collection.find({}).toArray();
 
-    return NextResponse.json(assets);
+    // Convert ObjectId to string for _id before sending to frontend
+    const serializedAssets = assets.map(asset => ({
+      ...asset,
+      _id: asset._id.toString(),
+    }));
+
+    return NextResponse.json(serializedAssets);
   } catch (error) {
     console.error('Error fetching assets:', error);
     return NextResponse.json({ message: 'Failed to fetch assets', error: (error as Error).message }, { status: 500 });
@@ -38,6 +44,7 @@ export async function POST(req: NextRequest) {
     }
 
     console.log('Successfully inserted asset with _id:', result.insertedId.toString());
+    // Ensure _id is returned as a string
     return NextResponse.json({ ...newAsset, _id: result.insertedId.toString() }, { status: 201 });
   } catch (error) {
     console.error('Error creating asset:', error);
