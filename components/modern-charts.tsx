@@ -15,9 +15,23 @@ import {
   Area,
   AreaChart,
 } from "recharts"
-import { useAssetStore } from "@/lib/asset-store"
 import { useInView } from "react-intersection-observer"
 import { useState, useEffect, useMemo } from "react"
+
+interface Asset {
+  _id: string;
+  name: string;
+  category: string;
+  status: "Active" | "Maintenance" | "Retired";
+  location: string;
+  purchaseDate: string;
+  value: number;
+  assignedTo?: string;
+}
+
+interface ModernChartsProps {
+  assets: Asset[];
+}
 
 const useAnimateOnInView = () => {
   const { ref, inView } = useInView({
@@ -36,8 +50,9 @@ const useAnimateOnInView = () => {
   return { ref, key, inView }
 }
 
-export function ModernCharts() {
-  const { assets } = useAssetStore()
+export function ModernCharts({ assets = [] }: ModernChartsProps) {
+  // Using a default empty array for assets to prevent 'undefined' errors
+  
   const { ref: pieChartRef, key: pieChartKey, inView: pieChartInView } = useAnimateOnInView()
   const { ref: barChartRef, key: barChartKey, inView: barChartInView } = useAnimateOnInView()
   const { ref: areaChartRef, key: areaChartKey, inView: areaChartInView } = useAnimateOnInView()
@@ -104,7 +119,7 @@ export function ModernCharts() {
           name: "Sports & Recreation",
           value: assets.filter((a) => a.category === "Sports & Recreation").length,
           color: chartColors[4],
-          gradient: "url(#dangerGradient)", // Assuming danger color for this
+          gradient: "url(#dangerGradient)", 
         },
         {
           name: "IT Infrastructure",
@@ -116,13 +131,13 @@ export function ModernCharts() {
           name: "Furniture & Fixtures",
           value: assets.filter((a) => a.category === "Furniture & Fixtures").length,
           color: chartColors[6],
-          gradient: "url(#successGradient)", // Assuming success color for this
+          gradient: "url(#successGradient)", 
         },
         {
           name: "Maintenance & Facilities",
           value: assets.filter((a) => a.category === "Maintenance & Facilities").length,
           color: chartColors[7],
-          gradient: "url(#purpleGradient)", // Reusing purple, can define a new one if needed
+          gradient: "url(#purpleGradient)", 
         },
       ].filter((item) => item.value > 0),
     [assets],
@@ -160,33 +175,33 @@ export function ModernCharts() {
       [
         {
           month: "Jan",
-          assets: Math.max(1, assets.length - 30),
-          value: Math.max(10, assets.reduce((sum, a) => sum + (a.value || 0), 0) / 1000 - 50),
-          maintenance: Math.max(0, assets.filter((a) => a.status === "Maintenance").length - 2),
+          assets: Math.max(1, assets.length > 0 ? assets.length - 30 : 0),
+          value: Math.max(10, assets.length > 0 ? assets.reduce((sum, a) => sum + (a.value || 0), 0) / 1000 - 50 : 0),
+          maintenance: Math.max(0, assets.length > 0 ? assets.filter((a) => a.status === "Maintenance").length - 2 : 0),
         },
         {
           month: "Feb",
-          assets: Math.max(1, assets.length - 25),
-          value: Math.max(15, assets.reduce((sum, a) => sum + (a.value || 0), 0) / 1000 - 40),
-          maintenance: Math.max(0, assets.filter((a) => a.status === "Maintenance").length - 1),
+          assets: Math.max(1, assets.length > 0 ? assets.length - 25 : 0),
+          value: Math.max(15, assets.length > 0 ? assets.reduce((sum, a) => sum + (a.value || 0), 0) / 1000 - 40 : 0),
+          maintenance: Math.max(0, assets.length > 0 ? assets.filter((a) => a.status === "Maintenance").length - 1 : 0),
         },
         {
           month: "Mar",
-          assets: Math.max(1, assets.length - 20),
-          value: Math.max(20, assets.reduce((sum, a) => sum + (a.value || 0), 0) / 1000 - 30),
-          maintenance: Math.max(0, assets.filter((a) => a.status === "Maintenance").length - 1),
+          assets: Math.max(1, assets.length > 0 ? assets.length - 20 : 0),
+          value: Math.max(20, assets.length > 0 ? assets.reduce((sum, a) => sum + (a.value || 0), 0) / 1000 - 30 : 0),
+          maintenance: Math.max(0, assets.length > 0 ? assets.filter((a) => a.status === "Maintenance").length - 1 : 0),
         },
         {
           month: "Apr",
-          assets: Math.max(1, assets.length - 15),
-          value: Math.max(25, assets.reduce((sum, a) => sum + (a.value || 0), 0) / 1000 - 20),
-          maintenance: Math.max(0, assets.filter((a) => a.status === "Maintenance").length),
+          assets: Math.max(1, assets.length > 0 ? assets.length - 15 : 0),
+          value: Math.max(25, assets.length > 0 ? assets.reduce((sum, a) => sum + (a.value || 0), 0) / 1000 - 20 : 0),
+          maintenance: Math.max(0, assets.length > 0 ? assets.filter((a) => a.status === "Maintenance").length : 0),
         },
         {
           month: "May",
-          assets: Math.max(1, assets.length - 10),
-          value: Math.max(30, assets.reduce((sum, a) => sum + (a.value || 0), 0) / 1000 - 10),
-          maintenance: Math.max(0, assets.filter((a) => a.status === "Maintenance").length),
+          assets: Math.max(1, assets.length > 0 ? assets.length - 10 : 0),
+          value: Math.max(30, assets.length > 0 ? assets.reduce((sum, a) => sum + (a.value || 0), 0) / 1000 - 10 : 0),
+          maintenance: Math.max(0, assets.length > 0 ? assets.filter((a) => a.status === "Maintenance").length : 0),
         },
         {
           month: "Jun",
@@ -271,7 +286,7 @@ export function ModernCharts() {
             <h4 className="text-lg font-semibold text-gray-900">Asset Distribution</h4>
             <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse"></div>
           </div>
-          <div className="flex-1 min-h-[16rem]"> {/* Removed h-64, added flex-1 and a min-height for mobile consistency */}
+          <div className="flex-1 min-h-[16rem]">
             {pieChartInView && (
               <ResponsiveContainer width="100%" height="100%" key={pieChartKey}>
                 <PieChart>
@@ -316,7 +331,7 @@ export function ModernCharts() {
             <h4 className="text-lg font-semibold text-gray-900">Asset Status</h4>
             <div className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></div>
           </div>
-          <div className="min-h-[16rem] lg:h-96 lg:flex-initial"> {/* Removed h-64, added flex-1 and a min-height for mobile consistency */}
+          <div className="min-h-[16rem] lg:h-96 lg:flex-initial">
             {barChartInView && (
               <ResponsiveContainer width="100%" height="100%" key={barChartKey}>
                 <BarChart data={statusData} margin={{ top: 0, right: 30, left: 0, bottom: 0 }}>
@@ -345,7 +360,7 @@ export function ModernCharts() {
             <h4 className="text-lg font-semibold text-gray-900">Growth Trends</h4>
             <div className="w-2 h-2 bg-purple-500 rounded-full animate-pulse"></div>
           </div>
-          <div className="min-h-[16rem] lg:h-96 lg:flex-initial"> {/* Removed h-64, added flex-1 and a min-height for mobile consistency */}
+          <div className="min-h-[16rem] lg:h-96 lg:flex-initial">
             {areaChartInView && (
               <ResponsiveContainer width="100%" height="100%" key={areaChartKey}>
                 <AreaChart data={trendData} margin={{ top: 20, right: 30, left: 0, bottom: 5 }}>

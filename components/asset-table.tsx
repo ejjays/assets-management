@@ -10,7 +10,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { formatCurrency, formatDate } from "@/lib/utils" // Import formatCurrency and formatDate from utils
 
 interface Asset {
-  id: string
+  _id?: string; // Changed to optional for robust handling
   name: string
   category: string
   status: "Active" | "Maintenance" | "Retired"
@@ -24,9 +24,10 @@ interface AssetTableProps {
   assets: Asset[]
   onEdit: (asset: Asset) => void
   onDelete: (assetId: string) => void
+  onAddAsset: () => void; // New prop for adding an asset
 }
 
-export function AssetTable({ assets, onEdit, onDelete }: AssetTableProps) {
+export function AssetTable({ assets = [], onEdit, onDelete, onAddAsset }: AssetTableProps) {
   const [qrModalOpen, setQrModalOpen] = useState(false)
   const [selectedAsset, setSelectedAsset] = useState<Asset | null>(null)
 
@@ -48,15 +49,16 @@ export function AssetTable({ assets, onEdit, onDelete }: AssetTableProps) {
     }
   }
 
-  // Removed local formatCurrency and formatDate functions as they are imported from @/lib/utils
-
   if (assets.length === 0) {
     return (
       <div className="bg-white rounded-xl border border-gray-200 p-8 text-center">
         <Package className="w-12 h-12 text-gray-400 mx-auto mb-4" />
         <h3 className="text-lg font-medium text-gray-900 mb-2">No assets found</h3>
         <p className="text-gray-500 mb-4">Get started by adding your first asset to the system.</p>
-        <Button className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700">
+        <Button 
+          className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
+          onClick={onAddAsset} 
+        >
           Add Your First Asset
         </Button>
       </div>
@@ -69,13 +71,13 @@ export function AssetTable({ assets, onEdit, onDelete }: AssetTableProps) {
       <div className="block lg:hidden space-y-4">
         {assets.map((asset) => (
           <div
-            key={asset.id}
+            key={asset._id?.toString() || asset.name} // Safely access _id and use name as fallback key
             className="bg-white rounded-xl border border-gray-200 p-4 hover:shadow-md transition-shadow"
           >
             <div className="flex items-start justify-between mb-3">
               <div className="flex-1 min-w-0">
                 <h3 className="text-base font-semibold text-gray-900 truncate">{asset.name}</h3>
-                <p className="text-sm text-gray-600">ID: {asset.id}</p>
+                <p className="text-sm text-gray-600">ID: {asset._id?.toString() || 'N/A'}</p> {/* Safely display _id */}
               </div>
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
@@ -92,7 +94,7 @@ export function AssetTable({ assets, onEdit, onDelete }: AssetTableProps) {
                     <QrCode className="w-4 h-4 mr-2" />
                     QR Code
                   </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => onDelete(asset.id)} className="text-red-600 focus:text-red-600">
+                  <DropdownMenuItem onClick={() => onDelete(asset._id?.toString() as string)} className="text-red-600 focus:text-red-600"> {/* Safely pass _id for deletion */}
                     <Trash2 className="w-4 h-4 mr-2" />
                     Delete
                   </DropdownMenuItem>
@@ -144,11 +146,11 @@ export function AssetTable({ assets, onEdit, onDelete }: AssetTableProps) {
           </TableHeader>
           <TableBody>
             {assets.map((asset) => (
-              <TableRow key={asset.id} className="hover:bg-gray-50">
+              <TableRow key={asset._id?.toString() || asset.name} className="hover:bg-gray-50"> {/* Safely access _id and use name as fallback key */}
                 <TableCell>
                   <div>
                     <div className="font-medium text-gray-900">{asset.name}</div>
-                    <div className="text-sm text-gray-500">ID: {asset.id}</div>
+                    <div className="text-sm text-gray-500">ID: {asset._id?.toString() || 'N/A'}</div> {/* Safely display _id */}
                   </div>
                 </TableCell>
                 <TableCell>
@@ -180,7 +182,7 @@ export function AssetTable({ assets, onEdit, onDelete }: AssetTableProps) {
                     <Button
                       variant="ghost"
                       size="sm"
-                      onClick={() => onDelete(asset.id)}
+                      onClick={() => onDelete(asset._id?.toString() as string)}
                       className="h-8 w-8 p-0 text-red-600 hover:text-red-700 hover:bg-red-50"
                     >
                       <Trash2 className="h-4 w-4" />

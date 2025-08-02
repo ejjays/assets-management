@@ -1,10 +1,24 @@
 "use client"
 
 import { Monitor, Car, Wrench, Sofa, Smartphone, Server, BookOpen, FlaskConical, Library, Printer, Dumbbell, Building } from "lucide-react"
-import { useAssetStore } from "@/lib/asset-store"
 
-export function AssetCategoryCards() {
-  const { assets } = useAssetStore()
+interface Asset {
+  _id: string;
+  name: string;
+  category: string;
+  status: "Active" | "Maintenance" | "Retired";
+  location: string;
+  purchaseDate: string;
+  value: number;
+  assignedTo?: string;
+}
+
+interface AssetCategoryCardsProps {
+  assets: Asset[];
+}
+
+export function AssetCategoryCards({ assets = [] }: AssetCategoryCardsProps) {
+  // Using a default empty array for assets to prevent 'undefined' errors
 
   const categories = [
     {

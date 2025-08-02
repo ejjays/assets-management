@@ -3,69 +3,90 @@
 import type React from "react"
 
 import { useState, useEffect } from "react"
-import { X, Banknote, User, Package } from "lucide-react" // Changed DollarSign to Banknote
+import { X, Banknote, User, Package } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 
-interface AssetModalProps {
-  isOpen: boolean
-  onClose: () => void
-  onSave: (asset: any) => void
-  asset?: any
+// Define the Asset interface to match your MongoDB document structure, including optional _id for new assets
+interface Asset {
+  _id?: string; // Optional for new assets, required for existing ones
+  name: string;
+  category: string;
+  status: "Active" | "Maintenance" | "Retired";
+  location: string;
+  purchaseDate: string;
+  value: number;
+  assignedTo?: string;
+  description?: string;
+  serialNumber?: string;
+  manufacturer?: string;
+  model?: string;
 }
 
-export function AssetModal({ isOpen, onClose, onSave, asset }: AssetModalProps) {
-  const [formData, setFormData] = useState({
+interface AssetModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  onSave: (asset: Asset) => void; // Expects a complete Asset object
+  initialData?: Asset | null; // Renamed from 'asset' to 'initialData' for clarity
+}
+
+export function AssetModal({ isOpen, onClose, onSave, initialData }: AssetModalProps) {
+  const [formData, setFormData] = useState<Omit<Asset, '_id'> & { _id?: string, value: string }>({
     name: "",
     category: "",
     status: "Active",
     location: "",
     purchaseDate: "",
-    value: "",
+    value: "", // Keep as string for input field
     assignedTo: "",
     description: "",
     serialNumber: "",
     manufacturer: "",
     model: "",
-  })
+  });
 
-  const [errors, setErrors] = useState<Record<string, string>>({})
+  const [errors, setErrors] = useState<Record<string, string>>({});
 
   useEffect(() => {
-    if (asset) {
-      setFormData({
-        name: asset.name || "",
-        category: asset.category || "",
-        status: asset.status || "Active",
-        location: asset.location || "",
-        purchaseDate: asset.purchaseDate || "",
-        value: asset.value?.toString() || "",
-        assignedTo: asset.assignedTo || "",
-        description: asset.description || "",
-        serialNumber: asset.serialNumber || "",
-        manufacturer: asset.manufacturer || "",
-        model: asset.model || "",
-      })
-    } else {
-      setFormData({
-        name: "",
-        category: "",
-        status: "Active",
-        location: "",
-        purchaseDate: "",
-        value: "",
-        assignedTo: "",
-        description: "",
-        serialNumber: "",
-        manufacturer: "",
-        model: "",
-      })
+    if (isOpen) { // Only reset/populate when modal opens or initialData changes
+      if (initialData) {
+        // Populate form for editing
+        setFormData({
+          _id: initialData._id, // Keep _id for updates
+          name: initialData.name || "",
+          category: initialData.category || "",
+          status: initialData.status || "Active",
+          location: initialData.location || "",
+          purchaseDate: initialData.purchaseDate || "",
+          value: initialData.value?.toString() || "", // Convert number to string for input
+          assignedTo: initialData.assignedTo || "",
+          description: initialData.description || "",
+          serialNumber: initialData.serialNumber || "",
+          manufacturer: initialData.manufacturer || "",
+          model: initialData.model || "",
+        });
+      } else {
+        // Reset form for adding new asset
+        setFormData({
+          name: "",
+          category: "",
+          status: "Active",
+          location: "",
+          purchaseDate: "",
+          value: "",
+          assignedTo: "",
+          description: "",
+          serialNumber: "",
+          manufacturer: "",
+          model: "",
+        });
+      }
+      setErrors({}); // Clear errors when modal opens
     }
-    setErrors({})
-  }, [asset, isOpen])
+  }, [initialData, isOpen]);
 
   const categories = [
     "Classroom Assets",
@@ -76,9 +97,9 @@ export function AssetModal({ isOpen, onClose, onSave, asset }: AssetModalProps) 
     "IT Infrastructure",
     "Furniture & Fixtures",
     "Maintenance & Facilities",
-  ]
+  ];
 
-  const statuses = ["Active", "Maintenance", "Retired"]
+  const statuses = ["Active", "Maintenance", "Retired"];
 
   const locations = [
     "Main Building - Ground Floor",
@@ -96,62 +117,62 @@ export function AssetModal({ isOpen, onClose, onSave, asset }: AssetModalProps) 
     "Auditorium",
     "Main Server Room",
     "Warehouse",
-  ]
+  ];
 
   const validateForm = () => {
-    const newErrors: Record<string, string> = {}
+    const newErrors: Record<string, string> = {};
 
     if (!formData.name.trim()) {
-      newErrors.name = "Asset name is required"
+      newErrors.name = "Asset name is required";
     }
     if (!formData.category) {
-      newErrors.category = "Category is required"
+      newErrors.category = "Category is required";
     }
     if (!formData.location) {
-      newErrors.location = "Location is required"
+      newErrors.location = "Location is required";
     }
     if (!formData.purchaseDate) {
-      newErrors.purchaseDate = "Purchase date is required"
+      newErrors.purchaseDate = "Purchase date is required";
     }
     if (!formData.value || isNaN(Number(formData.value)) || Number(formData.value) <= 0) {
-      newErrors.value = "Valid value is required"
+      newErrors.value = "Valid value is required";
     }
 
-    setErrors(newErrors)
-    return Object.keys(newErrors).length === 0
-  }
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
 
   const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
+    e.preventDefault();
 
     if (!validateForm()) {
-      return
+      return;
     }
 
-    const assetData = {
+    // Prepare data for saving
+    const assetToSave: Asset = {
       ...formData,
-      value: Number(formData.value),
-      id: asset?.id || `BCP-AST-${Date.now()}`.slice(0, 12),
-    }
+      value: Number(formData.value), // Convert value back to number for submission
+    };
 
-    onSave(assetData)
-  }
+    onSave(assetToSave); // Pass the structured asset data to the onSave prop
+  };
 
   const handleInputChange = (field: string, value: string) => {
-    setFormData((prev) => ({ ...prev, [field]: value }))
+    setFormData((prev) => ({ ...prev, [field]: value }));
     if (errors[field]) {
-      setErrors((prev) => ({ ...prev, [field]: "" }))
+      setErrors((prev) => ({ ...prev, [field]: "" }));
     }
-  }
+  };
 
-  if (!isOpen) return null
+  if (!isOpen) return null;
 
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
       <div className="bg-white rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
         <div className="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 rounded-t-2xl">
           <div className="flex items-center justify-between">
-            <h2 className="text-xl font-bold text-gray-900">{asset ? "Edit Asset" : "Add New Asset"}</h2>
+            <h2 className="text-xl font-bold text-gray-900">{initialData ? "Edit Asset" : "Add New Asset"}</h2>
             <Button variant="ghost" size="sm" onClick={onClose} className="h-8 w-8 p-0">
               <X className="h-4 w-4" />
             </Button>
@@ -234,7 +255,7 @@ export function AssetModal({ isOpen, onClose, onSave, asset }: AssetModalProps) 
           {/* Financial Information */}
           <div className="space-y-4">
             <h3 className="text-lg font-semibold text-gray-900 flex items-center">
-              <Banknote className="w-5 h-5 mr-2" /> {/* Changed DollarSign to Banknote */}
+              <Banknote className="w-5 h-5 mr-2" />
               Financial Information
             </h3>
 
@@ -338,11 +359,11 @@ export function AssetModal({ isOpen, onClose, onSave, asset }: AssetModalProps) 
               type="submit"
               className="flex-1 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
             >
-              {asset ? "Update Asset" : "Add Asset"}
+              {initialData ? "Update Asset" : "Add Asset"}
             </Button>
           </div>
         </form>
       </div>
     </div>
-  )
+  );
 }
