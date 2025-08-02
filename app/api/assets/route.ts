@@ -35,20 +35,29 @@ export async function POST(req: NextRequest) {
     const collection = db.collection(COLLECTION_NAME);
 
     const newAsset = await req.json();
-    console.log('Received asset data for POST:', newAsset);
+    console.log('Received asset data for POST:', JSON.stringify(newAsset, null, 2));
+
+    // Ensure 'value' field is a number
+    if (newAsset.value && typeof newAsset.value === 'string') {
+        newAsset.value = parseFloat(newAsset.value);
+        if (isNaN(newAsset.value)) {
+            throw new Error('Invalid value provided for asset.value: not a valid number.');
+        }
+    }
+
     const result = await collection.insertOne(newAsset);
     
     if (!result.acknowledged || !result.insertedId) {
-      console.error('MongoDB insert not acknowledged or no ID returned:', result);
-      return NextResponse.json({ message: 'Failed to create asset' }, { status: 500 });
+      console.error('MongoDB insert not acknowledged or no ID returned. Result:', JSON.stringify(result, null, 2));
+      return NextResponse.json({ message: 'Failed to create asset: Insertion not acknowledged or no ID returned' }, { status: 500 });
     }
 
     console.log('Successfully inserted asset with _id:', result.insertedId.toString());
     // Ensure _id is returned as a string
     return NextResponse.json({ ...newAsset, _id: result.insertedId.toString() }, { status: 201 });
   } catch (error) {
-    console.error('Error creating asset:', error);
-    return NextResponse.json({ message: 'Failed to create asset', error: (error as Error).message }, { status: 500 });
+    console.error('Error creating asset (server-side):', error);
+    return NextResponse.json({ message: `Failed to create asset: ${(error as Error).message}` }, { status: 500 });
   }
 }
 
@@ -64,6 +73,15 @@ export async function PUT(req: NextRequest) {
       return NextResponse.json({ message: 'Asset ID is required for update' }, { status: 400 });
     }
 
+    // Ensure 'value' field is a number for updates too
+    if (updatedAsset.value && typeof updatedAsset.value === 'string') {
+        updatedAsset.value = parseFloat(updatedAsset.value);
+        if (isNaN(updatedAsset.value)) {
+            console.error('Parsed value for update is NaN, removing value field from update.');
+            delete updatedAsset.value; // Remove if invalid to prevent errors
+        }
+    }
+
     const result = await collection.updateOne(
       { _id: new ObjectId(_id) },
       { $set: updatedAsset }
@@ -73,7 +91,7 @@ export async function PUT(req: NextRequest) {
       return NextResponse.json({ message: 'Asset not found' }, { status: 404 });
     }
     if (result.modifiedCount === 0) {
-      return NextResponse.json({ message: 'No changes made to asset' }, { status: 200 }); // Or 304 Not Modified
+      return NextResponse.json({ message: 'No changes made to asset' }, { status: 200 });
     }
 
     return NextResponse.json({ message: 'Asset updated successfully' }, { status: 200 });

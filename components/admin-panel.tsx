@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react" // Added useEffect
 import { Plus, Download, Upload, Filter } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -10,7 +10,7 @@ import { useAssetStore } from "@/lib/asset-store"
 import { useToastStore } from "@/lib/toast-store"
 
 export function AdminPanel() {
-  const { assets, addAsset, updateAsset, deleteAsset } = useAssetStore()
+  const { assets, loading, fetchAssets, addAsset, updateAsset, deleteAsset } = useAssetStore() // Updated destructuring
   const { addToast } = useToastStore()
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [editingAsset, setEditingAsset] = useState<any>(null)
@@ -19,10 +19,14 @@ export function AdminPanel() {
 
   const categories = ["all", "Electronics", "Vehicles", "Equipment", "Furniture", "Mobile Devices", "IT Hardware"]
 
+  useEffect(() => {
+    fetchAssets() // Fetch assets when component mounts
+  }, [fetchAssets]) // Added fetchAssets to dependency array
+
   const filteredAssets = assets.filter((asset) => {
     const matchesSearch =
       asset.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      asset.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      asset._id?.toLowerCase().includes(searchTerm.toLowerCase()) || // Changed asset.id to asset._id
       asset.category.toLowerCase().includes(searchTerm.toLowerCase())
     const matchesCategory = filterCategory === "all" || asset.category === filterCategory
     return matchesSearch && matchesCategory
@@ -38,21 +42,29 @@ export function AdminPanel() {
     setIsModalOpen(true)
   }
 
-  const handleSaveAsset = (assetData: any) => {
-    if (editingAsset) {
-      updateAsset(editingAsset.id, assetData)
-      addToast("Asset updated successfully", "success")
-    } else {
-      addAsset(assetData)
-      addToast("Asset added successfully", "success")
+  const handleSaveAsset = async (assetData: any) => { // Made async
+    try {
+      if (editingAsset) {
+        await updateAsset(editingAsset._id, assetData) // Changed editingAsset.id to editingAsset._id
+        addToast("Asset updated successfully", "success")
+      } else {
+        await addAsset(assetData)
+        addToast("Asset added successfully", "success")
+      }
+      setIsModalOpen(false)
+      setEditingAsset(null)
+    } catch (error) {
+      addToast("Failed to save asset", "error")
     }
-    setIsModalOpen(false)
-    setEditingAsset(null)
   }
 
-  const handleDeleteAsset = (assetId: string) => {
-    deleteAsset(assetId)
-    addToast("Asset deleted successfully", "success")
+  const handleDeleteAsset = async (assetId: string) => { // Made async
+    try {
+      await deleteAsset(assetId)
+      addToast("Asset deleted successfully", "success")
+    } catch (error) {
+      addToast("Failed to delete asset", "error")
+    }
   }
 
   const handleExport = () => {
