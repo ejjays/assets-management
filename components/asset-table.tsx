@@ -54,6 +54,11 @@ export function AssetTable({ assets = [], onEdit, onDelete, onAddAsset }: AssetT
     setCurrentPage((prev) => Math.max(prev - 1, 1))
   }
 
+  const handleShowQR = (asset: Asset) => {
+    setSelectedAsset(asset)
+    setQrModalOpen(true)
+  }
+
   const getStatusColor = (status: string) => {
     switch (status) {
       case "Active":
