@@ -61,10 +61,6 @@ I'm your **AI Asset Assistant** with access to your **live asset database**.
   }
 
   useEffect(() => {
-    scrollToBottom()
-  }, [messages])
-
-  useEffect(() => {
     if (isOpen && !isMinimized && inputRef.current) {
       setTimeout(() => inputRef.current?.focus(), 100)
     }

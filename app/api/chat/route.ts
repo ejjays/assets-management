@@ -4,6 +4,13 @@ export async function POST(request: NextRequest) {
   try {
     const { message, assets } = await request.json()
 
+    // Format asset data for the prompt
+    const assetDataString = assets && assets.length > 0
+      ? assets.map((asset: any) => `Name: ${asset.name}, Category: ${asset.category}, Status: ${asset.status}`).join('\\n')
+ : "No assets available."
+
+    const prompt = `The user is asking a question about their assets. Here is a list of their assets:\\n\\n${assetDataString}\\n\\nUser's question: ${message}\\n\\nBased on the provided asset information, please answer the user's question. If the question cannot be answered with the provided asset data, politely inform the user and suggest what you *can* help with regarding their assets (e.g., listing assets, searching, maintenance, stock, reports).`
+
     if (!message) {
       return NextResponse.json({ error: "Message is required" }, { status: 400 })
     }
@@ -296,36 +303,17 @@ You can ask me questions naturally like:
 
 **I'm here to help you manage your ${assetCount} assets more effectively!**`
     } else {
-      // For unrecognized queries, provide a helpful response with suggestions
-      response = `# I'm Here to Help! 🤖
+      // More conversational and less rigid response for unrecognized queries
+      response = `Hello! I'm here to assist you with your asset management. I didn't quite understand your last message, "${message}", but I can help with a variety of tasks related to your ${assetCount} assets.
 
-I didn't quite understand "${message}", but I can help you with many asset management tasks!
+You can ask me about:
+- **Asset inventory and details** (e.g., "Show all assets", "Find a specific laptop")
+- **Maintenance schedules and needs** (e.g., "What needs maintenance?")
+- **Stock levels and inventory alerts** (e.g., "Check low stock")
+- **Reports and analytics** (e.g., "Generate a report")
+- **Specific asset categories** (e.g., "Tell me about vehicles")
 
-## 🔍 **Did you mean:**
-- **"Show all assets"** - View complete inventory (${assetCount} assets)
-- **"Find [item name]"** - Search for specific assets
-- **"What needs maintenance?"** - Check maintenance schedule
-- **"Check low stock"** - Review inventory levels
-- **"Generate report"** - Get analytics and insights
-
-## 💡 **Popular Queries:**
-- Asset counts and categories
-- Maintenance schedules and alerts
-- Inventory and stock levels
-- Cost analysis and reports
-- Equipment availability
-
-## 📝 **Try asking me:**
-- "How many laptops do we have?"
-- "Show me all vehicles"
-- "What's due for maintenance?"
-- "Which items are low in stock?"
-- "Generate monthly report"
-
-## 🎯 **Pro Tip:**
-Be specific in your requests! Instead of "stuff", try "laptops" or "office equipment". I work best with clear, direct questions about your assets.
-
-**What would you like to know about your ${assetCount} assets?**`
+Please try rephrasing your question, or choose from one of the suggestions above. What would you like to know or do regarding your assets?`
     }
 
     return NextResponse.json({
