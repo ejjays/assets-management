@@ -316,10 +316,10 @@ export function ModernCharts() {
             <h4 className="text-lg font-semibold text-gray-900">Asset Status</h4>
             <div className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></div>
           </div>
-          <div className=\"min-h-[16rem] lg:h-96 lg:flex-initial lg:px-0\"> {/* Removed h-64, added flex-1 and a min-height for mobile consistency */}
+          <div className="min-h-[16rem] lg:h-96 lg:flex-initial"> {/* Removed h-64, added flex-1 and a min-height for mobile consistency */}
             {barChartInView && (
               <ResponsiveContainer width="100%" height="100%" key={barChartKey}>
-                <BarChart data={statusData} margin={{ top: 20, right: 30, left: 0, bottom: 5 }}>
+                <BarChart data={statusData} margin={{ top: 0, right: 30, left: 0, bottom: 0 }}>
                   <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
                   <XAxis dataKey="name" tick={{ fontSize: 12, fill: "#64748b" }} axisLine={{ stroke: "#e2e8f0" }} />
                   <YAxis tick={{ fontSize: 12, fill: "#64748b" }} axisLine={{ stroke: "#e2e8f0" }} />
@@ -345,7 +345,7 @@ export function ModernCharts() {
             <h4 className="text-lg font-semibold text-gray-900">Growth Trends</h4>
             <div className="w-2 h-2 bg-purple-500 rounded-full animate-pulse"></div>
           </div>
-          <div className=\"min-h-[16rem] lg:h-96 lg:flex-initial lg:px-0\"> {/* Removed h-64, added flex-1 and a min-height for mobile consistency */}
+          <div className="min-h-[16rem] lg:h-96 lg:flex-initial"> {/* Removed h-64, added flex-1 and a min-height for mobile consistency */}
             {areaChartInView && (
               <ResponsiveContainer width="100%" height="100%" key={areaChartKey}>
                 <AreaChart data={trendData} margin={{ top: 20, right: 30, left: 0, bottom: 5 }}>
