@@ -67,18 +67,35 @@ export function AssetModal({ isOpen, onClose, onSave, asset }: AssetModalProps) 
     setErrors({})
   }, [asset, isOpen])
 
-  const categories = ["Electronics", "Vehicles", "Equipment", "Furniture", "Mobile Devices", "IT Hardware"]
+  const categories = [
+    "Classroom Assets",
+    "Laboratory Equipment",
+    "Library Resources",
+    "Office & Admin",
+    "Sports & Recreation",
+    "IT Infrastructure",
+    "Furniture & Fixtures",
+    "Maintenance & Facilities",
+  ]
 
   const statuses = ["Active", "Maintenance", "Retired"]
 
   const locations = [
-    "Building A - Floor 1",
-    "Building A - Floor 2",
-    "Building B - Floor 1",
-    "Building B - Floor 2",
+    "Main Building - Ground Floor",
+    "Main Building - 2nd Floor",
+    "Main Building - 3rd Floor",
+    "Admin Building - Ground Floor",
+    "Admin Building - 2nd Floor",
+    "Sports Complex",
+    "Library",
+    "Laboratory Wing",
+    "Faculty Room",
+    "Guidance Office",
+    "Clinic",
+    "Canteen",
+    "Auditorium",
+    "Main Server Room",
     "Warehouse",
-    "Remote Location",
-    "Mobile",
   ]
 
   const validateForm = () => {
@@ -114,7 +131,7 @@ export function AssetModal({ isOpen, onClose, onSave, asset }: AssetModalProps) 
     const assetData = {
       ...formData,
       value: Number(formData.value),
-      id: asset?.id || `AST-${Date.now()}`,
+      id: asset?.id || `BCP-AST-${Date.now()}`.slice(0, 12),
     }
 
     onSave(assetData)
@@ -223,7 +240,7 @@ export function AssetModal({ isOpen, onClose, onSave, asset }: AssetModalProps) 
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="value">Asset Value ($) *</Label>
+                <Label htmlFor="value">Asset Value (₱) *</Label>
                 <Input
                   id="value"
                   type="number"

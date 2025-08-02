@@ -1,6 +1,6 @@
 "use client"
 
-import { Monitor, Car, Wrench, Sofa, Smartphone, Server } from "lucide-react"
+import { Monitor, Car, Wrench, Sofa, Smartphone, Server, BookOpen, FlaskConical, Library, Printer, Dumbbell, Building } from "lucide-react"
 import { useAssetStore } from "@/lib/asset-store"
 
 export function AssetCategoryCards() {
@@ -8,57 +8,73 @@ export function AssetCategoryCards() {
 
   const categories = [
     {
-      name: "Electronics",
-      icon: Monitor,
-      count: assets.filter((a) => a.category === "Electronics").length,
+      name: "Classroom Assets",
+      icon: BookOpen,
+      count: assets.filter((a) => a.category === "Classroom Assets").length,
       gradient: "from-blue-500 via-cyan-600 to-teal-700",
       cardBg: "from-blue-50/80 via-cyan-50/60 to-white/90",
       hoverGlow: "hover:shadow-blue-500/25",
     },
     {
-      name: "Vehicles",
-      icon: Car,
-      count: assets.filter((a) => a.category === "Vehicles").length,
+      name: "Laboratory Equipment",
+      icon: FlaskConical,
+      count: assets.filter((a) => a.category === "Laboratory Equipment").length,
       gradient: "from-emerald-500 via-green-600 to-lime-700",
       cardBg: "from-emerald-50/80 via-green-50/60 to-white/90",
       hoverGlow: "hover:shadow-emerald-500/25",
     },
     {
-      name: "Equipment",
-      icon: Wrench,
-      count: assets.filter((a) => a.category === "Equipment").length,
+      name: "Library Resources",
+      icon: Library,
+      count: assets.filter((a) => a.category === "Library Resources").length,
       gradient: "from-purple-500 via-violet-600 to-indigo-700",
       cardBg: "from-purple-50/80 via-violet-50/60 to-white/90",
       hoverGlow: "hover:shadow-purple-500/25",
     },
     {
-      name: "Furniture",
-      icon: Sofa,
-      count: assets.filter((a) => a.category === "Furniture").length,
+      name: "Office & Admin",
+      icon: Building,
+      count: assets.filter((a) => a.category === "Office & Admin").length,
       gradient: "from-amber-500 via-orange-600 to-red-600",
       cardBg: "from-amber-50/80 via-orange-50/60 to-white/90",
       hoverGlow: "hover:shadow-amber-500/25",
     },
     {
-      name: "Mobile Devices",
-      icon: Smartphone,
-      count: assets.filter((a) => a.category === "Mobile Devices").length,
+      name: "Sports & Recreation",
+      icon: Dumbbell,
+      count: assets.filter((a) => a.category === "Sports & Recreation").length,
       gradient: "from-rose-500 via-pink-600 to-purple-700",
       cardBg: "from-rose-50/80 via-pink-50/60 to-white/90",
       hoverGlow: "hover:shadow-rose-500/25",
     },
     {
-      name: "IT Hardware",
+      name: "IT Infrastructure",
       icon: Server,
-      count: assets.filter((a) => a.category === "IT Hardware").length,
+      count: assets.filter((a) => a.category === "IT Infrastructure").length,
       gradient: "from-cyan-500 via-blue-600 to-indigo-700",
       cardBg: "from-cyan-50/80 via-blue-50/60 to-white/90",
       hoverGlow: "hover:shadow-cyan-500/25",
     },
+    {
+      name: "Furniture & Fixtures",
+      icon: Sofa,
+      count: assets.filter((a) => a.category === "Furniture & Fixtures").length,
+      gradient: "from-yellow-500 via-lime-600 to-green-700",
+      cardBg: "from-yellow-50/80 via-lime-50/60 to-white/90",
+      hoverGlow: "hover:shadow-yellow-500/25",
+    },
+    {
+      name: "Maintenance & Facilities",
+      icon: Wrench,
+      count: assets.filter((a) => a.category === "Maintenance & Facilities").length,
+      gradient: "from-gray-500 via-slate-600 to-zinc-700",
+      cardBg: "from-gray-50/80 via-slate-50/60 to-white/90",
+      hoverGlow: "hover:shadow-gray-500/25",
+    },
   ]
 
   return (
-    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4 sm:gap-6">
+    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-4 gap-4 sm:gap-6">
       {categories.map((category, index) => (
         <div
           key={index}

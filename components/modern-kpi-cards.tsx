@@ -2,6 +2,7 @@
 
 import { Package, Activity, DollarSign, TrendingUp, Users, AlertTriangle } from "lucide-react"
 import { useAssetStore } from "@/lib/asset-store"
+import { formatCurrency } from "@/lib/utils"
 
 export function ModernKPICards() {
   const { assets } = useAssetStore()
@@ -10,7 +11,12 @@ export function ModernKPICards() {
   const activeAssets = assets.filter((asset) => asset.status === "Active").length
   const totalValue = assets.reduce((sum, asset) => sum + (asset.value || 0), 0)
   const maintenanceAssets = assets.filter((asset) => asset.status === "Maintenance").length
-  const departments = [...new Set(assets.map((asset) => asset.department))].length
+  // Assuming 'department' might not exist on all assets or might be renamed for a school context.
+  // For a school, 'assignedTo' might be more relevant, or a new field 'department'/'faculty'.
+  // For now, let's use a placeholder or derive from existing data if possible.
+  // If 'assignedTo' can be a department/faculty, then this can be used.
+  // Otherwise, it might require a new field in the Asset interface or a different way to categorize.
+  const departments = [...new Set(assets.map((asset) => asset.assignedTo || "Unassigned"))].length
   const criticalAssets = assets.filter((asset) => asset.status === "Retired").length
 
   const kpiData = [
@@ -38,7 +44,7 @@ export function ModernKPICards() {
     },
     {
       title: "Total Value",
-      value: `$${(totalValue / 1000).toFixed(0)}K`,
+      value: formatCurrency(totalValue),
       description: "Asset portfolio value",
       icon: DollarSign,
       trend: "+15%",
@@ -61,7 +67,7 @@ export function ModernKPICards() {
     {
       title: "Departments",
       value: departments.toString(),
-      description: "Active departments",
+      description: "Active departments/faculties",
       icon: Users,
       trend: "+3%",
       trendUp: true,

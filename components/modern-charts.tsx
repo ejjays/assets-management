@@ -68,6 +68,8 @@ export function ModernCharts() {
     "#A855F7", // Violet
     "#EC4899", // Pink
     "#6366F1", // Indigo
+    "#D946EF", // Fuchsia
+    "#14B8A6", // Teal
   ]
 
   // Category distribution data with modern colors
@@ -75,40 +77,52 @@ export function ModernCharts() {
     () =>
       [
         {
-          name: "Electronics",
-          value: assets.filter((a) => a.category === "Electronics").length,
-          color: "#3B82F6",
+          name: "Classroom Assets",
+          value: assets.filter((a) => a.category === "Classroom Assets").length,
+          color: chartColors[0],
           gradient: "url(#blueGradient)",
         },
         {
-          name: "Vehicles",
-          value: assets.filter((a) => a.category === "Vehicles").length,
-          color: "#10B981",
+          name: "Laboratory Equipment",
+          value: assets.filter((a) => a.category === "Laboratory Equipment").length,
+          color: chartColors[1],
           gradient: "url(#emeraldGradient)",
         },
         {
-          name: "Equipment",
-          value: assets.filter((a) => a.category === "Equipment").length,
-          color: "#8B5CF6",
+          name: "Library Resources",
+          value: assets.filter((a) => a.category === "Library Resources").length,
+          color: chartColors[2],
           gradient: "url(#purpleGradient)",
         },
         {
-          name: "Furniture",
-          value: assets.filter((a) => a.category === "Furniture").length,
-          color: "#F59E0B",
+          name: "Office & Admin",
+          value: assets.filter((a) => a.category === "Office & Admin").length,
+          color: chartColors[3],
           gradient: "url(#amberGradient)",
         },
         {
-          name: "Mobile",
-          value: assets.filter((a) => a.category === "Mobile Devices").length,
-          color: "#EC4899",
-          gradient: "url(#pinkGradient)",
+          name: "Sports & Recreation",
+          value: assets.filter((a) => a.category === "Sports & Recreation").length,
+          color: chartColors[4],
+          gradient: "url(#dangerGradient)", // Assuming danger color for this
         },
         {
-          name: "IT Hardware",
-          value: assets.filter((a) => a.category === "IT Hardware").length,
-          color: "#06B6D4",
+          name: "IT Infrastructure",
+          value: assets.filter((a) => a.category === "IT Infrastructure").length,
+          color: chartColors[5],
           gradient: "url(#cyanGradient)",
+        },
+        {
+          name: "Furniture & Fixtures",
+          value: assets.filter((a) => a.category === "Furniture & Fixtures").length,
+          color: chartColors[6],
+          gradient: "url(#successGradient)", // Assuming success color for this
+        },
+        {
+          name: "Maintenance & Facilities",
+          value: assets.filter((a) => a.category === "Maintenance & Facilities").length,
+          color: chartColors[7],
+          gradient: "url(#purpleGradient)", // Reusing purple, can define a new one if needed
         },
       ].filter((item) => item.value > 0),
     [assets],
@@ -121,20 +135,20 @@ export function ModernCharts() {
         {
           name: "Active",
           value: assets.filter((a) => a.status === "Active").length,
-          color: "#22C55E",
-          fill: "#22C55E",
+          color: modernColors.success,
+          fill: modernColors.success,
         },
         {
           name: "Maintenance",
           value: assets.filter((a) => a.status === "Maintenance").length,
-          color: "#F59E0B",
-          fill: "#F59E0B",
+          color: modernColors.warning,
+          fill: modernColors.warning,
         },
         {
           name: "Retired",
           value: assets.filter((a) => a.status === "Retired").length,
-          color: "#EF4444",
-          fill: "#EF4444",
+          color: modernColors.danger,
+          fill: modernColors.danger,
         },
       ].filter((item) => item.value > 0),
     [assets],
@@ -221,13 +235,17 @@ export function ModernCharts() {
             <stop offset="0%" stopColor="#F59E0B" stopOpacity={0.8} />
             <stop offset="100%" stopColor="#D97706" stopOpacity={0.3} />
           </linearGradient>
-          <linearGradient id="pinkGradient" x1="0%" y1="0%" x2="0%" y2="100%">
-            <stop offset="0%" stopColor="#EC4899" stopOpacity={0.8} />
-            <stop offset="100%" stopColor="#BE185D" stopOpacity={0.3} />
+          <linearGradient id="dangerGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+            <stop offset="0%" stopColor="#EF4444" stopOpacity={0.8} />
+            <stop offset="100%" stopColor="#B91C1C" stopOpacity={0.3} />
           </linearGradient>
           <linearGradient id="cyanGradient" x1="0%" y1="0%" x2="0%" y2="100%">
             <stop offset="0%" stopColor="#06B6D4" stopOpacity={0.8} />
             <stop offset="100%" stopColor="#0891B2" stopOpacity={0.3} />
+          </linearGradient>
+          <linearGradient id="successGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+            <stop offset="0%" stopColor="#22C55E" stopOpacity={0.8} />
+            <stop offset="100%" stopColor="#15803D" stopOpacity={0.3} />
           </linearGradient>
         </defs>
       </svg>
@@ -309,7 +327,8 @@ export function ModernCharts() {
                   <Bar dataKey="value" radius={[8, 8, 0, 0]} stroke="white" strokeWidth={2}>
                     {statusData.map((entry, index) => (
                       <Cell key={`cell-${index}`} fill={entry.color} />
-                    ))}
+                    ))
+}
                   </Bar>
                 </BarChart>
               </ResponsiveContainer>
