@@ -1,4 +1,4 @@
-# Asset Management System for Bestlink College of the Philippines 🇵🇭
+# AI-Powered Assets Management System
 
 A powerful and intuitive web application to manage and track all assets within Bestlink College of the Philippines. 🏫
 
@@ -23,7 +23,7 @@ To get a local copy up and running, follow these simple steps.
 
 1.  Clone the repo
     ```sh
-    git clone https://github.com/your_username_/your_repository_name.git
+    git clone https://github.com/ejjays/assets-management.git
     ```
 2.  Install NPM packages
     ```sh
