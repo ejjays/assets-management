@@ -1,7 +1,7 @@
 "use client"
 
-import { useState, useEffect } from "react" // Added useEffect
-import { Plus, Download, Upload, Filter } from "lucide-react"
+import { useState, useEffect, useRef } from "react"
+import { Plus, Download, Upload, Filter, X } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { AssetTable } from "@/components/asset-table"
@@ -10,23 +10,27 @@ import { useAssetStore } from "@/lib/asset-store"
 import { useToastStore } from "@/lib/toast-store"
 
 export function AdminPanel() {
-  const { assets, loading, fetchAssets, addAsset, updateAsset, deleteAsset } = useAssetStore() // Updated destructuring
+  const { assets, loading, fetchAssets, addAsset, updateAsset, deleteAsset } = useAssetStore()
   const { addToast } = useToastStore()
   const [isModalOpen, setIsModalOpen] = useState(false)
+  const [isImportModalOpen, setIsImportModalOpen] = useState(false)
+  const [jsonInput, setJsonInput] = useState("")
   const [editingAsset, setEditingAsset] = useState<any>(null)
   const [searchTerm, setSearchTerm] = useState("")
   const [filterCategory, setFilterCategory] = useState("all")
 
-  const categories = ["all", "Electronics", "Vehicles", "Equipment", "Furniture", "Mobile Devices", "IT Hardware"]
+  const fileInputRef = useRef<HTMLInputElement>(null); // Reintroduced useRef for file input
+
+  const categories = ["all", "Classroom Assets", "Laboratory Equipment", "Library Resources", "Office & Admin", "Sports & Recreation", "IT Infrastructure", "Furniture & Fixtures", "Maintenance & Facilities"]
 
   useEffect(() => {
-    fetchAssets() // Fetch assets when component mounts
-  }, [fetchAssets]) // Added fetchAssets to dependency array
+    fetchAssets()
+  }, [fetchAssets])
 
   const filteredAssets = assets.filter((asset) => {
     const matchesSearch =
       asset.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      asset._id?.toLowerCase().includes(searchTerm.toLowerCase()) || // Changed asset.id to asset._id
+      asset._id?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       asset.category.toLowerCase().includes(searchTerm.toLowerCase())
     const matchesCategory = filterCategory === "all" || asset.category === filterCategory
     return matchesSearch && matchesCategory
@@ -42,10 +46,10 @@ export function AdminPanel() {
     setIsModalOpen(true)
   }
 
-  const handleSaveAsset = async (assetData: any) => { // Made async
+  const handleSaveAsset = async (assetData: any) => {
     try {
       if (editingAsset) {
-        await updateAsset(editingAsset._id, assetData) // Changed editingAsset.id to editingAsset._id
+        await updateAsset(editingAsset._id, assetData)
         addToast("Asset updated successfully", "success")
       } else {
         await addAsset(assetData)
@@ -58,7 +62,7 @@ export function AdminPanel() {
     }
   }
 
-  const handleDeleteAsset = async (assetId: string) => { // Made async
+  const handleDeleteAsset = async (assetId: string) => {
     try {
       await deleteAsset(assetId)
       addToast("Asset deleted successfully", "success")
@@ -77,6 +81,85 @@ export function AdminPanel() {
     linkElement.click()
     addToast("Assets exported successfully", "success")
   }
+
+  // Handle import click to open the modal (can be from button or file selection)
+  const handleImportClick = () => {
+    setJsonInput(""); // Clear previous input
+    setIsImportModalOpen(true);
+  };
+
+  // Centralized function to process imported assets (from paste or file)
+  const processImportedAssets = async (importedAssets: any[]) => {
+    if (!Array.isArray(importedAssets)) {
+      addToast("Imported data is not a valid JSON array of assets.", "error");
+      return;
+    }
+
+    let successCount = 0;
+    let failCount = 0;
+
+    for (const asset of importedAssets) {
+      try {
+        // Remove _id if present, as MongoDB will generate a new one on insert
+        const { _id, ...assetToSave } = asset;
+        await addAsset(assetToSave);
+        successCount++;
+      } catch (innerError) {
+        console.error("Failed to add individual asset:", asset.name, innerError);
+        failCount++;
+      }
+    }
+
+    if (successCount > 0) {
+      addToast(`Successfully imported ${successCount} assets.`, "success");
+    } else if (failCount > 0) {
+      addToast(`Failed to import all assets. ${failCount} errors occurred.`, "error");
+    } else {
+      addToast("No assets found in the imported data.", "warning");
+    }
+
+    setIsImportModalOpen(false);
+    setJsonInput(""); // Clear the input after successful import
+    fetchAssets(); // Refresh assets after import
+  };
+
+  // Handle JSON paste and import logic
+  const handleImportJson = async () => {
+    if (!jsonInput.trim()) {
+      addToast("Please paste JSON data to import.", "error");
+      return;
+    }
+
+    try {
+      const importedAssets: any[] = JSON.parse(jsonInput);
+      await processImportedAssets(importedAssets);
+    } catch (error) {
+      console.error("Error parsing or importing assets:", error);
+      addToast(`Failed to import assets: ${(error as Error).message}`, "error");
+    }
+  };
+
+  // Handle file selection and import logic
+  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) {
+      addToast("No file selected", "error");
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = async (e) => {
+      try {
+        const content = e.target?.result as string;
+        const importedAssets: any[] = JSON.parse(content);
+        await processImportedAssets(importedAssets); // Use the centralized function
+      } catch (error) {
+        console.error("Error parsing or importing assets from file:", error);
+        addToast(`Failed to import assets from file: ${(error as Error).message}`, "error");
+      }
+    };
+    reader.readAsText(file);
+  };
 
   return (
     <div className="flex-1 space-y-4 p-4 md:p-6 lg:p-8 pt-16 md:pt-6">
@@ -99,7 +182,7 @@ export function AdminPanel() {
             <Download className="w-4 h-4 mr-2" />
             Export
           </Button>
-          <Button variant="outline" disabled>
+          <Button variant="outline" onClick={handleImportClick}>
             <Upload className="w-4 h-4 mr-2" />
             Import
           </Button>
@@ -174,6 +257,50 @@ export function AdminPanel() {
         onSave={handleSaveAsset}
         asset={editingAsset}
       />
+
+      {/* New: Import JSON Modal */}
+      {isImportModalOpen && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
+          <div className="bg-white rounded-2xl max-w-lg w-full p-6 relative shadow-2xl">
+            <Button variant="ghost" size="sm" onClick={() => setIsImportModalOpen(false)} className="absolute top-4 right-4 h-8 w-8 p-0">
+              <X className="h-4 w-4" />
+            </Button>
+            <h3 className="text-xl font-bold text-gray-900 mb-4">Import Assets</h3>
+            <p className="text-gray-600 mb-4">Paste your asset data in JSON array format below, or choose a file.</p>
+            <textarea
+              className="w-full p-3 border border-gray-300 rounded-md mb-4 font-mono text-sm"
+              rows={10}
+              placeholder='[{"name": "Projector", "category": "Classroom Assets", "status": "Active", "location": "Room 201", "purchaseDate": "2023-01-15", "value": 1200}]
+'
+              value={jsonInput}
+              onChange={(e) => setJsonInput(e.target.value)}
+            ></textarea>
+            <div className="flex space-x-2">
+              {/* Hidden file input for direct file selection */}
+              <input
+                type="file"
+                ref={fileInputRef}
+                onChange={handleFileChange}
+                accept=".json"
+                style={{ display: 'none' }}
+              />
+              <Button
+                variant="outline"
+                onClick={() => fileInputRef.current?.click()}
+                className="flex-1"
+              >
+                Choose from files
+              </Button>
+              <Button
+                onClick={handleImportJson}
+                className="flex-1 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white"
+              >
+                Import Assets
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

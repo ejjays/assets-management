@@ -139,7 +139,7 @@ export function ModernCharts({ assets = [] }: ModernChartsProps) {
           color: chartColors[7],
           gradient: "url(#purpleGradient)", 
         },
-      ].filter((item) => item.value > 0),
+      ],
     [assets],
   )
 
@@ -165,7 +165,7 @@ export function ModernCharts({ assets = [] }: ModernChartsProps) {
           color: modernColors.danger,
           fill: modernColors.danger,
         },
-      ].filter((item) => item.value > 0),
+      ],
     [assets],
   )
 
