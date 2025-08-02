@@ -3,7 +3,7 @@
 import type React from "react"
 
 import { useState, useEffect } from "react"
-import { X, DollarSign, User, Package } from "lucide-react"
+import { X, Banknote, User, Package } from "lucide-react" // Changed DollarSign to Banknote
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -234,7 +234,7 @@ export function AssetModal({ isOpen, onClose, onSave, asset }: AssetModalProps) 
           {/* Financial Information */}
           <div className="space-y-4">
             <h3 className="text-lg font-semibold text-gray-900 flex items-center">
-              <DollarSign className="w-5 h-5 mr-2" />
+              <Banknote className="w-5 h-5 mr-2" /> {/* Changed DollarSign to Banknote */}
               Financial Information
             </h3>
 

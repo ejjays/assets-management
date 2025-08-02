@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/badge"
 import { QRModal } from "@/components/qr-modal"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
+import { formatCurrency, formatDate } from "@/lib/utils" // Import formatCurrency and formatDate from utils
 
 interface Asset {
   id: string
@@ -47,22 +48,7 @@ export function AssetTable({ assets, onEdit, onDelete }: AssetTableProps) {
     }
   }
 
-  const formatCurrency = (value: number) => {
-    return new Intl.NumberFormat("en-US", {
-      style: "currency",
-      currency: "USD",
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 0,
-    }).format(value)
-  }
-
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString("en-US", {
-      year: "numeric",
-      month: "short",
-      day: "numeric",
-    })
-  }
+  // Removed local formatCurrency and formatDate functions as they are imported from @/lib/utils
 
   if (assets.length === 0) {
     return (
