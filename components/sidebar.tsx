@@ -147,7 +147,7 @@ export function Sidebar({ activeView, setActiveView }: SidebarProps) {
               {(state !== "collapsed" || isMobileOpen) && (
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-medium text-gray-900 truncate">Admin User</p>
-                  <p className="text-xs text-gray-500 truncate">bcp@edu.ph</p>
+                  <p className="text-xs text-gray-500 truncate">admin@bcp.edu.ph</p>
                 </div>
               )}
             </div>
